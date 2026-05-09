@@ -13,7 +13,7 @@
     "start_logodownloader": "node logo_downloader.js"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "aliases": {
     "@root": "/home/node/app",
     "@libs": "/home/node/app/libs",

@@ -224,4 +224,4 @@ Main areas worth optimizing:
 
 ## License
 
-Proprietary — all rights reserved.
+[MIT](LICENSE) — free to use, modify, and redistribute.
