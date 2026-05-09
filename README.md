@@ -210,6 +210,18 @@ WAX State History Node
 
 ---
 
+## Refactoring with Claude Code
+
+This codebase was written without AI tooling and contains a number of technical issues that were not easy to resolve at the time. With today's AI tools the architecture can be optimized quickly — using [Claude Code](https://claude.com/claude-code) to refactor and improve the code is highly recommended.
+
+Main areas worth optimizing:
+
+- **Data storage** — the current database is the main bottleneck in production. Migrating to a storage engine better suited to the access patterns (time-series / high-write workloads) would unlock significant headroom.
+- **Indexer transport** — rework the indexer so it runs on top of [Wharfkit](https://wharfkit.com/) + a direct WebSocket connection to the state history plugin, instead of relying on the current external library. This resolves the recurring node disconnection issues.
+- **Delta-based state replay** — the indexer that reproduces blockchain state by following table deltas can be rewritten to be roughly 5× faster. With AI assistance this kind of rewrite is now realistic in a short timeframe.
+
+---
+
 ## License
 
 Proprietary — all rights reserved.

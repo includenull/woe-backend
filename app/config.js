@@ -148,26 +148,6 @@ export default {
      * If filter by actname is true it will check synced last block by src + table + actname instead of only src + table
      * Usefull when several actions are feeding the same table
     **/
-    /**** Limit order ****/
-    {
-      src: 'neftyblocks',
-      account: 'calcormining',
-      actname: 'logcancel',
-      firstblock: 337548024,
-      filterByActname: false,
-      classname: 'LimitLogOrderCloseRow',
-      table: 'limitLogOrderClose'
-    },
-    {
-      src: 'neftyblocks',
-      account: 'calcormining',
-      actname: 'orderreceipt',
-      firstblock: 337548024,
-      filterByActname: false,
-      // If order has 0 bid left it will be inserted in both limitLogOrderFill and limitLogOrderClose table
-      classname: 'LimitLogOrderFillRow',
-      table: 'limitLogOrderFill'
-    },
 		/**** Swap events ****/
 		{
 			src: 'neftyblocks',
