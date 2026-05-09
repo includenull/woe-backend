@@ -1,0 +1,24 @@
+version: '3'
+services:
+  routesIndexer:
+    image: 'node:16.17.0'
+    user: "1000:1000"
+    working_dir: /home/node/app
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./app:/home/node/app
+    command: "npm run start_indexer deamon=routesIndexer"
+    depends_on:
+      - db
+  logodownloader:
+    image: 'node:16.17.0'
+    user: "1000:1000"
+    working_dir: /home/node/app
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./app:/home/node/app
+    command: "npm run start_logodownloader"
+    depends_on:
+      - redis

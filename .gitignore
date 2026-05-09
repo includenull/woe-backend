@@ -1,0 +1,4 @@
+app/node_modules/
+app/.env
+app/package-lock.json
+app/tokens_logo/*

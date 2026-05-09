@@ -1,0 +1,119 @@
+version: '3'
+services:
+  reader:
+    build: ./images/node-reader
+    user: "1000:1000"
+    working_dir: /home/node/app
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./app:/home/node/app
+    command: "npm run start_deamon_bigmem deamon=reader"
+#    command: "npm run start_deamon_inspect deamon=reader"
+#    ports:
+#      - "9229:9229"
+    depends_on:
+      - redis
+  readerrows:
+    build: ./images/node-reader
+    user: "1000:1000"
+    working_dir: /home/node/app
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./app:/home/node/app
+    command: "npm run start_deamon_bigmem deamon=reader_rows"
+    depends_on:
+      - redis
+  indexer:
+    build: ./images/node-reader
+    user: "1000:1000"
+    working_dir: /home/node/app
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./app:/home/node/app
+    ports:
+      - "8200"
+    command: "npm run start_deamon_bigmem deamon=indexer"
+    depends_on:
+      - redis
+  liquiditypricesindexer:
+    build: ./images/node-reader
+    user: "1000:1000"
+    working_dir: /home/node/app
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./app:/home/node/app
+    command: "npm run start_deamon deamon=liquidity_prices_indexer"
+    depends_on:
+      - indexer
+  laststatsindexer:
+    build: ./images/node-reader
+    user: "1000:1000"
+    working_dir: /home/node/app
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./app:/home/node/app
+    ports:
+      - "8220"
+    command: "npm run start_deamon_bigmem deamon=last_stats_indexer"
+    depends_on:
+      - indexer
+  klinesindexer:
+    build: ./images/node-reader
+    user: "1000:1000"
+    working_dir: /home/node/app
+    stop_grace_period: 60s
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./app:/home/node/app
+    ports:
+      - "8210"
+    command: "npm run start_deamon_bigmem deamon=klines_indexer"
+    depends_on:
+      - indexer
+      - redis
+  api:
+    build: ./images/node-reader
+    user: "1000:1000"
+    working_dir: /home/node/app
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./app:/home/node/app
+    command: "npm run start_api"
+    ports:
+      - 8000:8000
+    depends_on:
+      - indexer
+      - redis
+    restart: on-failure
+  socketio:
+    build: ./images/node-reader
+    user: "1000:1000"
+    working_dir: /home/node/app
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./app:/home/node/app
+    ports:
+      - 8010:8010
+    command: "npm run start_deamon deamon=socketio_server"
+    depends_on:
+      - redis
+  redis:
+    image: 'redis:7'
+    ports:
+      - 6379:6379
+    volumes:
+      - ./services_conf/redis.conf:/usr/local/etc/redis/redis.conf
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+#  rabbitmq:
+#    image: 'rabbitmq:3.11.13-management-alpine'
+#    environment:
+#      -  RABBITMQ_DEFAULT_USER=swaplog
+#      -  RABBITMQ_DEFAULT_PASS=swaplog

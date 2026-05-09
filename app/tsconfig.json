@@ -1,0 +1,23 @@
+{
+  "extends": "./node_modules/@blockmatic/tsconfig/tsconfig.nodejs.json",
+  "compilerOptions": {
+    "target": "es2016",
+    "lib": ["es6", "esnext", "es2015", "DOM"],
+    "module": "esNext",
+    "moduleResolution": "node",
+    "strict": true,
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "noEmitOnError": true,
+    "declaration": true,
+    "removeComments": false,
+    "noImplicitAny": false,
+    "forceConsistentCasingInFileNames": true,
+    "noUnusedLocals": true,
+    "pretty": true,
+    "skipLibCheck": true,
+  },
+  "include": ["bin"],
+  //"exclude": ["libs"]
+}

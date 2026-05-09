@@ -1,0 +1,28 @@
+version: '3'
+services:
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: swaplog@waxpaca.fr
+      PGADMIN_DEFAULT_PASSWORD: swaplog
+    ports:
+      - "8081:80"
+    depends_on:
+      - db
+  redisinsight:
+    image: redislabs/redisinsight:latest
+    ports:
+      - "8082:8001"
+      - "8443:8443"
+    environment:
+      - REDIS_HOSTS=redis://redis:6379
+    depends_on:
+      - redis
+  db:
+    image: 'postgres:14.5'
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=swaplog
+      - POSTGRES_PASSWORD=swaplog
+      - POSTGRES_DB=swaplog
