@@ -3,6 +3,7 @@ import bodyParser from 'body-parser'
 import zlib from 'zlib';
 import { v4 as uuidv4 } from 'uuid';
 import { createProxyMiddleware } from 'http-proxy-middleware';
+import AppConfig, { validateRequiredConfig } from './config.js';
 
 import getRedis from '@connectors/RedisConnector.js';
 
@@ -38,6 +39,8 @@ const resGzipJson = (json, res) => {
 }
 
 const app = express()
+validateRequiredConfig(AppConfig)
+
 const redis = await getRedis()
 
 app.disable('x-powered-by');

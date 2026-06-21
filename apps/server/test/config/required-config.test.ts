@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getMissingRequiredConfig, validateRequiredConfig } from "../../config.js";
+import { getMissingRequiredConfig, parseOptionalStartBlock, validateRequiredConfig } from "../../config.js";
 
 const validConfig = {
   rpc_endpoints: ["http://localhost:8888"],
@@ -24,8 +24,8 @@ describe("required server config", () => {
 
   it("reports all missing required config values", () => {
     const missing = getMissingRequiredConfig({
-      rpc_endpoints: [undefined, ""],
-      waxnode_endpoint: "",
+      rpc_endpoints: [undefined, "   "],
+      waxnode_endpoint: "\t",
       hyperion_endpoint: undefined,
       knexConfig: {
         connection: {
@@ -54,5 +54,11 @@ describe("required server config", () => {
     expect(() => validateRequiredConfig({ ...validConfig, waxnode_endpoint: "" })).toThrow(
       "Missing required server configuration: waxnode_endpoint (set WAXNODE_ENDPOINT)"
     );
+  });
+
+  it("ignores invalid START_BLOCK values", () => {
+    expect(parseOptionalStartBlock(undefined)).toBeUndefined();
+    expect(parseOptionalStartBlock("not-a-number")).toBeUndefined();
+    expect(parseOptionalStartBlock("123")).toBe(123);
   });
 });

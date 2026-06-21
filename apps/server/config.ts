@@ -1,7 +1,15 @@
 import * as dotenv from "dotenv";
 dotenv.config();
 
-const isBlank = (value) => value === undefined || value === null || value === "";
+const isBlank = (value) => value === undefined || value === null || (typeof value === "string" && value.trim() === "");
+
+export const parseOptionalStartBlock = (value) => {
+  if(value === undefined)
+    return undefined;
+
+  const parsed = Number(value);
+  return isNaN(parsed) ? undefined : parsed;
+};
 
 export const getMissingRequiredConfig = (config) => {
   const missing = [];
@@ -114,9 +122,7 @@ const AppConfig = {
     "hype.gm",
   ],
   start_block:
-    process.env.START_BLOCK === undefined
-      ? undefined
-      : Number(process.env.START_BLOCK), // don't index under this block, override firstblock
+    parseOptionalStartBlock(process.env.START_BLOCK), // don't index under this block, override firstblock
   // List of table to listen delta to keep state into memory
   tables_interest: [
     // tables_interest without rowsSubIndexer are not indexed in memory but detla qstream is still read by readerrows
@@ -362,7 +368,5 @@ const AppConfig = {
     },
   ],
 };
-
-validateRequiredConfig(AppConfig);
 
 export default AppConfig;
