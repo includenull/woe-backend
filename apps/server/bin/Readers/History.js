@@ -84,7 +84,8 @@ class HistoryReader {
     	' - last sync block: ' + last_synced_block_num +
   		' - global sequence: ' + last_synced_global_sequence
   	)
-    const start_block_num = Math.max(AppConfig.start_block, act_interest.firstblock, last_synced_block_num)
+    const configured_start_block = AppConfig.start_block ?? head_block_num - 10000
+    const start_block_num = Math.max(configured_start_block, act_interest.firstblock, last_synced_block_num)
     const dataRows = await this.getHistory({
 			account: act_interest.account,
 			actname: act_interest.actname,
