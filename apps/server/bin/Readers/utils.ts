@@ -1,6 +1,17 @@
-import { RpcInterfaces } from 'eosjs'
-
 import AppConfig from '../../config.js'
+
+export type ChainAbi = {
+  version: string
+  types: unknown[]
+  structs: unknown[]
+  actions: unknown[]
+  tables: unknown[]
+  ricardian_clauses: unknown[]
+  error_messages?: unknown[]
+  abi_extensions?: unknown[]
+  variants?: unknown[]
+  action_results?: unknown[]
+}
 
 export const eosioApi = 'http://'+AppConfig.waxnode_endpoint+':'+AppConfig.waxnode_http_port
 
@@ -16,6 +27,6 @@ export const fetchAbi = (account_name: string) =>
     const response = await res.json()
     return {
       account_name,
-      abi: response.abi as RpcInterfaces.Abi,
+      abi: response.abi as ChainAbi,
     }
   })

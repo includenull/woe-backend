@@ -5,7 +5,7 @@ import {
   EosioReaderConfig,
   EosioReaderTableRowFilter,
   ShipTableDeltaName,
-} from '../../libs/antelope-ship-reader/dist/index.js';
+} from '@waxonedge/antelope-ship-reader';
 
 import SwapOrderRow from '../Models/Rows/SwapOrder.js';
 import MarketMatchRow from '../Models/Rows/MarketMatch.js';
@@ -70,8 +70,14 @@ export default class StreamReader {
 			lastSyncsBlock.push(await this.getLastSyncedBlock(ai.table, ai.src, (ai.filterByActname ? ai.actname : '')))
 		// Take max block num since from history we fetch all and if restart from stream max sync is already processed
 		lastSyncsBlock.sort((a, b) => b - a)
-		this.initialStartBlock = lastSyncsBlock[0]
 		this.info = await getInfo()
+
+		const maxSyncedBlock = lastSyncsBlock[0] ?? 0
+		this.initialStartBlock = maxSyncedBlock > 0
+			? maxSyncedBlock
+			: (AppConfig.start_block ?? this.info.last_irreversible_block_num - 10000)
+
+		const start_block_num = Math.max(0, this.initialStartBlock - 2)
   	
   	const unique_contract_names = [...new Set(table_rows_whitelist().map((row) => row.code))]
   	const abisArr = await Promise.all(unique_contract_names.map((account_name) => fetchAbi(account_name)))
@@ -101,7 +107,7 @@ export default class StreamReader {
 	    actions_whitelist,
 	    contract_abis,
 	    request: {
-	      start_block_num: this.initialStartBlock - 2,
+	      start_block_num,
 	      end_block_num: 0xffffffff,
 	      max_messages_in_flight: 500,
 	      have_positions: [],

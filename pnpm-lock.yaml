@@ -12,10 +12,10 @@ importers:
   .:
     devDependencies:
       '@biomejs/biome':
-        specifier: latest
+        specifier: 2.5.0
         version: 2.5.0
       typescript:
-        specifier: latest
+        specifier: 6.0.3
         version: 6.0.3
       vitest:
         specifier: 4.1.9
@@ -26,9 +26,9 @@ importers:
       '@alcorexchange/alcor-swap-sdk':
         specifier: 1.0.24
         version: 1.0.24
-      '@eosrio/node-abieos':
-        specifier: 2.2.0
-        version: 2.2.0
+      '@waxonedge/antelope-ship-reader':
+        specifier: workspace:*
+        version: link:../../packages/antelope-ship-reader
       '@waxonedge/api-contracts':
         specifier: workspace:*
         version: link:../../packages/api-contracts
@@ -50,12 +50,6 @@ importers:
       dotenv:
         specifier: 16.6.1
         version: 16.6.1
-      eos-common:
-        specifier: 0.12.0
-        version: 0.12.0
-      eosjs:
-        specifier: 22.1.0
-        version: 22.1.0
       express:
         specifier: 4.22.2
         version: 4.22.2
@@ -68,21 +62,12 @@ importers:
       knex:
         specifier: 2.5.1
         version: 2.5.1(pg@8.21.0)
-      lodash.omit:
-        specifier: 4.18.0
-        version: 4.18.0
       mongodb:
         specifier: 4.17.2
         version: 4.17.2
-      node-worker-threads-pool:
-        specifier: 1.5.1
-        version: 1.5.1
       objection:
         specifier: 3.1.5
         version: 3.1.5(knex@2.5.1(pg@8.21.0))
-      p-queue:
-        specifier: 6.6.2
-        version: 6.6.2
       pg:
         specifier: 8.21.0
         version: 8.21.0
@@ -101,9 +86,6 @@ importers:
       stream:
         specifier: 0.0.3
         version: 0.0.3
-      text-encoding:
-        specifier: 0.7.0
-        version: 0.7.0
       tsx:
         specifier: 4.22.4
         version: 4.22.4
@@ -113,9 +95,6 @@ importers:
       winston:
         specifier: 3.19.0
         version: 3.19.0
-      ws:
-        specifier: 7.5.11
-        version: 7.5.11(bufferutil@4.1.0)(utf-8-validate@5.0.10)
     devDependencies:
       '@blockmatic/eslint-config-base':
         specifier: 2.0.0
@@ -126,18 +105,9 @@ importers:
       '@blockmatic/tsconfig':
         specifier: 2.0.0
         version: 2.0.0(typescript@6.0.3)
-      '@types/lodash.omit':
-        specifier: 4.5.9
-        version: 4.5.9
       '@types/node':
         specifier: 25.9.4
         version: 25.9.4
-      '@types/text-encoding':
-        specifier: 0.0.40
-        version: 0.0.40
-      '@types/ws':
-        specifier: 7.4.7
-        version: 7.4.7
       all-contributors-cli:
         specifier: 6.26.1
         version: 6.26.1
@@ -168,13 +138,6 @@ importers:
       vitest:
         specifier: 4.1.9
         version: 4.1.9(@types/node@25.9.4)(vite@8.0.16(@types/node@25.9.4)(esbuild@0.28.1)(tsx@4.22.4))
-    optionalDependencies:
-      bufferutil:
-        specifier: ^4.1.0
-        version: 4.1.0
-      utf-8-validate:
-        specifier: 5.0.10
-        version: 5.0.10
 
   apps/web:
     dependencies:
@@ -207,10 +170,63 @@ importers:
         specifier: 4.1.9
         version: 4.1.9(@types/node@26.0.0)(vite@8.0.16(@types/node@26.0.0)(esbuild@0.28.1)(tsx@4.22.4))
 
+  packages/antelope-ship-reader:
+    dependencies:
+      '@eosrio/node-abieos':
+        specifier: 2.2.0
+        version: 2.2.0
+      eosjs:
+        specifier: 22.1.0
+        version: 22.1.0
+      lodash.omit:
+        specifier: 4.18.0
+        version: 4.18.0
+      node-worker-threads-pool:
+        specifier: 1.5.1
+        version: 1.5.1
+      p-queue:
+        specifier: 6.6.2
+        version: 6.6.2
+      rxjs:
+        specifier: 6.6.7
+        version: 6.6.7
+      text-encoding:
+        specifier: 0.7.0
+        version: 0.7.0
+      ws:
+        specifier: 7.5.11
+        version: 7.5.11(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+    devDependencies:
+      '@types/lodash.omit':
+        specifier: 4.5.9
+        version: 4.5.9
+      '@types/node':
+        specifier: 25.9.4
+        version: 25.9.4
+      '@types/text-encoding':
+        specifier: 0.0.40
+        version: 0.0.40
+      '@types/ws':
+        specifier: 7.4.7
+        version: 7.4.7
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
+      vitest:
+        specifier: 4.1.9
+        version: 4.1.9(@types/node@25.9.4)(vite@8.0.16(@types/node@25.9.4)(esbuild@0.28.1)(tsx@4.22.4))
+    optionalDependencies:
+      bufferutil:
+        specifier: 4.1.0
+        version: 4.1.0
+      utf-8-validate:
+        specifier: 5.0.10
+        version: 5.0.10
+
   packages/api-contracts:
     devDependencies:
       typescript:
-        specifier: latest
+        specifier: 6.0.3
         version: 6.0.3
       vitest:
         specifier: 4.1.9

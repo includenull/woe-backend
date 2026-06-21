@@ -1,10 +1,6 @@
-import { asset, symbol, extended_asset, name, extended_symbol } from "eos-common"
+import { getAssetCode, getAssetPrecision } from '../../../utils/wharfAssets.js'
 import { parseDateFromSmartcontract } from '../../../utils/utils.js'
 import getDb from '../../Connectors/DbPGConnector.js'
-
-const getAmountFromAsset = (asset) => asset.amount/Math.pow(10, asset.symbol.precision())
-const getCodeFromAsset = (asset) => asset.symbol.code().toString()
-const getPrecisionFromAsset = (asset) => asset.symbol.precision()
 
 export default class LogpoolRow {
 	constructor({
@@ -37,10 +33,10 @@ export default class LogpoolRow {
 		this.sqrtPriceX64 = sqrtPriceX64
 		this.tick = tick
 		this.tickSpacing = tickSpacing
-		this.codeA = getCodeFromAsset(asset(tokenA.quantity))
-		this.codeB = getCodeFromAsset(asset(tokenB.quantity))
-		this.precisionA = getPrecisionFromAsset(asset(tokenA.quantity))
-		this.precisionB = getPrecisionFromAsset(asset(tokenB.quantity))
+		this.codeA = getAssetCode(tokenA.quantity)
+		this.codeB = getAssetCode(tokenB.quantity)
+		this.precisionA = getAssetPrecision(tokenA.quantity)
+		this.precisionB = getAssetPrecision(tokenB.quantity)
 		this.contractA = tokenA.contract
 		this.contractB = tokenB.contract
 	}

@@ -1,11 +1,7 @@
-import { asset, symbol, extended_asset, name, extended_symbol } from "eos-common"
+import { getAssetAmount, getAssetCode, getAssetPrecision } from '../../../utils/wharfAssets.js'
 import {parseDateFromSmartcontract, littleEndianToDesimal} from '../../../utils/utils.js'
 import getDb from '../../Connectors/DbPGConnector.js'
 import getRedis from '../../Connectors/RedisConnector.js'
-
-const getAmountFromAsset = (asset) => asset.amount/Math.pow(10, asset.symbol.precision())
-const getCodeFromAsset = (asset) => asset.symbol.code().toString()
-const getPrecisionFromAsset = (asset) => asset.symbol.precision()
 
 class MarketMatchRow {
 	constructor({
@@ -93,15 +89,15 @@ class MarketMatchRow {
 			marketMatch.bidder = act.bidder,
 			marketMatch.unit_price = Number(littleEndianToDesimal(act.unit_price))
 
-      marketMatch.amount_ask = getAmountFromAsset(asset(act.ask))
-			marketMatch.code_ask = getCodeFromAsset(asset(act.ask))
-			marketMatch.precision_ask = getPrecisionFromAsset(asset(act.ask))
-			marketMatch.amount_bid = getAmountFromAsset(asset(act.bid))
-			marketMatch.code_bid = getCodeFromAsset(asset(act.bid))
-			marketMatch.precision_bid = getPrecisionFromAsset(asset(act.bid))
-			marketMatch.amount_bidder_balance_before = getAmountFromAsset(asset(act.bidder_balance_before))
-			marketMatch.code_bidder_balance_before = getCodeFromAsset(asset(act.bidder_balance_before))
-			marketMatch.precision_bidder_balance_before = getPrecisionFromAsset(asset(act.bidder_balance_before))
+      marketMatch.amount_ask = getAssetAmount(act.ask)
+			marketMatch.code_ask = getAssetCode(act.ask)
+			marketMatch.precision_ask = getAssetPrecision(act.ask)
+			marketMatch.amount_bid = getAssetAmount(act.bid)
+			marketMatch.code_bid = getAssetCode(act.bid)
+			marketMatch.precision_bid = getAssetPrecision(act.bid)
+			marketMatch.amount_bidder_balance_before = getAssetAmount(act.bidder_balance_before)
+			marketMatch.code_bidder_balance_before = getAssetCode(act.bidder_balance_before)
+			marketMatch.precision_bidder_balance_before = getAssetPrecision(act.bidder_balance_before)
 
 			marketMatch.market_id = Number(act.market.id)
 			marketMatch.market_frozen = act.market.frozen
@@ -111,12 +107,12 @@ class MarketMatchRow {
 			marketMatch.market_contract_quote_token = act.market.quote_token.contract
 			marketMatch.market_precision_quote_token = Number(act.market.quote_token.sym.split(',')[0])
 			marketMatch.market_code_quote_token = act.market.quote_token.sym.split(',')[1]
-			marketMatch.market_amount_min_buy = getAmountFromAsset(asset(act.market.min_buy))
-			marketMatch.market_code_min_buy = getCodeFromAsset(asset(act.market.min_buy))
-			marketMatch.market_precision_min_buy = getPrecisionFromAsset(asset(act.market.min_buy))
-			marketMatch.market_amount_min_sell = getAmountFromAsset(asset(act.market.min_sell))
-			marketMatch.market_code_min_sell = getCodeFromAsset(asset(act.market.min_sell))
-			marketMatch.market_precision_min_sell = getPrecisionFromAsset(asset(act.market.min_sell))
+			marketMatch.market_amount_min_buy = getAssetAmount(act.market.min_buy)
+			marketMatch.market_code_min_buy = getAssetCode(act.market.min_buy)
+			marketMatch.market_precision_min_buy = getAssetPrecision(act.market.min_buy)
+			marketMatch.market_amount_min_sell = getAssetAmount(act.market.min_sell)
+			marketMatch.market_code_min_sell = getAssetCode(act.market.min_sell)
+			marketMatch.market_precision_min_sell = getAssetPrecision(act.market.min_sell)
     }
 
     return marketMatch

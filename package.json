@@ -9,6 +9,7 @@
     "typecheck": "pnpm -r typecheck",
     "build": "pnpm -r build",
     "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
     "dev:web": "pnpm --filter @waxonedge/web dev",
     "server:api": "pnpm --filter @waxonedge/server start_api"
   },
@@ -16,8 +17,8 @@
     "@wharfkit/antelope": "1.2.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "latest",
-    "typescript": "latest",
+    "@biomejs/biome": "2.5.0",
+    "typescript": "6.0.3",
     "vitest": "4.1.9"
   }
 }

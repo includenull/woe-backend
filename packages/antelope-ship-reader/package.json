@@ -1,0 +1,40 @@
+{
+  "name": "@waxonedge/antelope-ship-reader",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest --run --passWithNoTests"
+  },
+  "dependencies": {
+    "@eosrio/node-abieos": "2.2.0",
+    "eosjs": "22.1.0",
+    "lodash.omit": "4.18.0",
+    "node-worker-threads-pool": "1.5.1",
+    "p-queue": "6.6.2",
+    "rxjs": "6.6.7",
+    "text-encoding": "0.7.0",
+    "ws": "7.5.11"
+  },
+  "devDependencies": {
+    "@types/lodash.omit": "4.5.9",
+    "@types/node": "25.9.4",
+    "@types/text-encoding": "0.0.40",
+    "@types/ws": "7.4.7",
+    "typescript": "6.0.3",
+    "vitest": "4.1.9"
+  },
+  "optionalDependencies": {
+    "bufferutil": "4.1.0",
+    "utf-8-validate": "5.0.10"
+  }
+}

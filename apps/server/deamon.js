@@ -1,4 +1,4 @@
-import AppConfig from './config.js'
+import AppConfig, { validateRequiredConfig } from './config.js'
 
 import Reader from '@bin/Reader.js'
 import Readerrows from '@bin/Readerrows.js'
@@ -63,6 +63,8 @@ const startReaderRows = async () => {
 }
 
 const main = async(argv) => {
+  validateRequiredConfig(AppConfig)
+
   if(argv.deamon !== undefined) {
     if(argv.deamon === 'reader')
       startReader()
@@ -90,4 +92,7 @@ for(let i = 0; i < rawArgv.length; ++i) {
   argv[arg[0]] = arg[1]
 }
 
-main(argv)
+main(argv).catch((err) => {
+  console.error(err.message);
+  process.exit(1);
+});

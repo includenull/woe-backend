@@ -1,7 +1,5 @@
 import { filter } from 'rxjs/internal/operators/filter.js'
-import txtEncodingPkg from 'text-encoding';
-const { TextDecoder, TextEncoder } = txtEncodingPkg;
-import { Serialize } from 'eosjs';
+import { Name } from '@wharfkit/antelope';
 import {
   createEosioShipReader,
   EosioReaderAbisMap,
@@ -9,41 +7,14 @@ import {
   EosioReaderConfig,
   EosioReaderTableRowFilter,
   ShipTableDeltaName,
-} from '../../libs/antelope-ship-reader/dist/index.js';
+} from '@waxonedge/antelope-ship-reader';
 
 import AppConfig from '../../config.js'
 
 import { fetchAbi, getInfo, eosioApi } from './utils.js';
 
-/**
- * Convert `bignum` to an unsigned decimal number
- *
- * @param minDigits 0-pad result to this many digits
- */
-const binaryToDecimal = (bignum: Uint8Array, minDigits = 1): string => {
-    const result = Array(minDigits).fill('0'.charCodeAt(0)) as number[];
-    for (let i = bignum.length - 1; i >= 0; --i) {
-        let carry = bignum[i];
-        for (let j = 0; j < result.length; ++j) {
-            const x = ((result[j] - '0'.charCodeAt(0)) << 8) + carry;
-            result[j] = '0'.charCodeAt(0) + x % 10;
-            carry = (x / 10) | 0;
-        }
-        while (carry) {
-            result.push('0'.charCodeAt(0) + carry % 10);
-            carry = (carry / 10) | 0;
-        }
-    }
-    result.reverse();
-    return String.fromCharCode(...result);
-};
-
 function leapNameToUint(name: string): string {
-	const buffer = new Serialize.SerialBuffer({ textEncoder: new TextEncoder(), textDecoder: new TextDecoder() });
-
-	buffer.pushName(name);
-
-	return binaryToDecimal(buffer.asUint8Array());
+	return Name.from(name).value.toString();
 }
 
 export default class StreamReaderrows {
