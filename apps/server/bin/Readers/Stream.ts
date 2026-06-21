@@ -5,7 +5,7 @@ import {
   EosioReaderConfig,
   EosioReaderTableRowFilter,
   ShipTableDeltaName,
-} from '../../libs/antelope-ship-reader/dist/index.js';
+} from '@waxonedge/antelope-ship-reader';
 
 import SwapOrderRow from '../Models/Rows/SwapOrder.js';
 import MarketMatchRow from '../Models/Rows/MarketMatch.js';

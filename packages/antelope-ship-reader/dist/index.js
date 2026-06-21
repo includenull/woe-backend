@@ -16,9 +16,11 @@ import { serialize } from './serializer.js';
 import { StaticPool } from 'node-worker-threads-pool';
 import * as nodeAbieos from '@eosrio/node-abieos';
 import omit from 'lodash.omit';
-import { fetchAbi } from '@readers/utils.js';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 export * from './types/index.js';
 export * from 'rxjs';
+const distDir = dirname(fileURLToPath(import.meta.url));
 const defaultShipRequest = {
     start_block_num: 0,
     end_block_num: 0xffffffff,
@@ -29,6 +31,18 @@ const defaultShipRequest = {
     fetch_traces: true,
     fetch_deltas: true,
 };
+const fetchAbi = (rpcUrl, account_name) => fetch(`${rpcUrl}/v1/chain/get_abi`, {
+    method: 'POST',
+    body: JSON.stringify({
+        account_name,
+    }),
+}).then((res) => __awaiter(void 0, void 0, void 0, function* () {
+    const response = yield res.json();
+    return {
+        account_name,
+        abi: response.abi,
+    };
+}));
 export const createEosioShipReader = (config) => __awaiter(void 0, void 0, void 0, function* () {
     // ========================= eosio-ship-reader factory validations ===================================
     const contractNames = [...new Set(config.table_rows_whitelist().map((row) => row.code))].filter(cn => cn != '*');
@@ -126,7 +140,7 @@ export const createEosioShipReader = (config) => __awaiter(void 0, void 0, void 
 
         if(state.abis.get(deserializedRowData[1].code) === undefined) {
             console.log('Downloading missing abis of account '+deserializedRowData[1].code)
-            const missingAbi = yield fetchAbi(deserializedRowData[1].code);
+            const missingAbi = yield fetchAbi(config.rpc_url, deserializedRowData[1].code);
             state.abis.set(missingAbi.account_name, missingAbi.abi)
             createDeserializationWorkers()
         }
@@ -240,7 +254,7 @@ export const createEosioShipReader = (config) => __awaiter(void 0, void 0, void 
     const createDeserializationWorkers = () => {
         state.deserializationWorkers = new StaticPool({
             size: config.ds_threads,
-            task: `./libs/antelope-ship-reader/dist/deserializer.js`,
+            task: join(distDir, 'deserializer.js'),
             workerData: {
                 abis: state.abis,
                 ds_experimental: config.ds_experimental,

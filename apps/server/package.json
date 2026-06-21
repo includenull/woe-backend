@@ -19,44 +19,35 @@
   "license": "MIT",
   "dependencies": {
     "@alcorexchange/alcor-swap-sdk": "1.0.24",
-    "@eosrio/node-abieos": "2.2.0",
     "@waxonedge/api-contracts": "workspace:*",
+    "@waxonedge/antelope-ship-reader": "workspace:*",
     "@wharfkit/antelope": "1.2.0",
     "@wharfkit/contract": "0.4.3",
     "amqplib": "0.10.9",
     "axios": "0.27.2",
     "body-parser": "1.20.5",
     "dotenv": "16.6.1",
-    "eosjs": "22.1.0",
     "express": "4.22.2",
     "http-proxy-middleware": "2.0.10",
     "jsbi": "4.3.2",
     "knex": "2.5.1",
-    "lodash.omit": "4.18.0",
     "mongodb": "4.17.2",
-    "node-worker-threads-pool": "1.5.1",
     "objection": "3.1.5",
-    "p-queue": "6.6.2",
     "pg": "8.21.0",
     "rate-limiter-flexible": "5.0.5",
     "redis": "4.7.1",
     "rxjs": "6.6.7",
     "socket.io": "4.8.3",
     "stream": "0.0.3",
-    "text-encoding": "0.7.0",
     "uuid": "9.0.1",
     "winston": "3.19.0",
-    "tsx": "4.22.4",
-    "ws": "7.5.11"
+    "tsx": "4.22.4"
   },
   "devDependencies": {
     "@blockmatic/eslint-config-base": "2.0.0",
     "@blockmatic/prettier-config": "2.1.0",
     "@blockmatic/tsconfig": "2.0.0",
-    "@types/lodash.omit": "4.5.9",
     "@types/node": "25.9.4",
-    "@types/text-encoding": "0.0.40",
-    "@types/ws": "7.4.7",
     "all-contributors-cli": "6.26.1",
     "denoify": "1.6.17",
     "eslint": "7",
@@ -67,9 +58,5 @@
     "ts-node-dev": "1.1.8",
     "typescript": "6.0.3",
     "vitest": "4.1.9"
-  },
-  "optionalDependencies": {
-    "bufferutil": "^4.1.0",
-    "utf-8-validate": "5.0.10"
   }
 }

@@ -10,7 +10,7 @@
     "includes": [
       "**",
       "!apps/server/node_modules",
-      "!apps/server/libs/antelope-ship-reader/dist",
+      "!packages/antelope-ship-reader/dist",
       "!apps/server/bin/Readers/*.js",
       "!apps/server/bin/Readers/*.d.ts",
       "!apps/server/bin/Readers/*.map"

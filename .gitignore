@@ -3,7 +3,7 @@ apps/*/node_modules/
 apps/server/.env
 apps/server/tokens_logo/*
 dist/
-!apps/server/libs/antelope-ship-reader/dist/
+!packages/antelope-ship-reader/dist/
 coverage/
 *.tsbuildinfo
 *.log
