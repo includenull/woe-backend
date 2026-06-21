@@ -1,28 +1,21 @@
-import { filter } from "rxjs/internal/operators/filter.js";
-import { Name } from "@wharfkit/antelope";
 import {
-  createEosioShipReader,
-  EosioReaderAbisMap,
-  EosioReaderActionFilter,
-  EosioReaderConfig,
-  EosioReaderTableRowFilter,
-  ShipTableDeltaName,
-} from "@waxonedge/antelope-ship-reader";
+  StateHistoryBlockReader,
+  type ShipBlockResponse,
+} from "@blocdraig/ship";
 
 import AppConfig from "../../config.js";
 
-import { fetchAbi, getInfo, eosioApi } from "./utils.js";
+import { getInfo } from "./utils.js";
+import { leapNameToUint, ShipReaderAdapter } from "./shipAdapter.js";
 import logger from "@utils/logger.js";
-
-function leapNameToUint(name: string): string {
-  return Name.from(name).value.toString();
-}
 
 export default class StreamReaderrows {
   tables_interest: any[];
   eosioReader: any;
   onProcessedData: any;
   info: any;
+  shipAdapter: ShipReaderAdapter;
+  readerRequest: any;
 
   constructor(tables_interest, onProcessedData) {
     this.tables_interest = tables_interest;
@@ -30,105 +23,73 @@ export default class StreamReaderrows {
     this.onProcessedData = onProcessedData;
 
     this.info = null;
+    this.shipAdapter = new ShipReaderAdapter();
+    this.readerRequest = null;
   }
 
   async loadReader() {
-    const table_rows_whitelist: () => EosioReaderTableRowFilter[] = () =>
-      this.tables_interest.map((ti: any) => ({
-        code: ti.code,
-        table: ti.table,
-      }));
-
-    const actions_whitelist: () => EosioReaderActionFilter[] = () => [];
-
     this.info = await getInfo();
 
-    const unique_contract_names = [
-      ...new Set(table_rows_whitelist().map((row) => row.code)),
-    ].filter((account_name) => account_name !== "*");
-    const abisArr = await Promise.all(
-      unique_contract_names.map((account_name) => fetchAbi(account_name)),
-    );
-
-    const contract_abis: () => EosioReaderAbisMap = () => {
-      const numap = new Map();
-      abisArr.forEach(({ account_name, abi }) => numap.set(account_name, abi));
-      return numap;
-    };
-
-    const delta_whitelist: () => ShipTableDeltaName[] = () => [
-      "account_metadata",
-      "contract_table",
-      "contract_row",
-      "contract_index64",
-      "resource_usage",
-      "resource_limits_state",
-    ];
-
-    const eosioReaderConfig: EosioReaderConfig = {
-      ws_url:
-        "ws://" + AppConfig.waxnode_endpoint + ":" + AppConfig.waxnode_ws_port,
-      rpc_url: eosioApi,
-      ds_threads: 6,
-      ds_experimental: false,
-      delta_whitelist,
-      table_rows_whitelist,
-      actions_whitelist,
-      contract_abis,
-      request: {
-        start_block_num: this.info.head_block_num + 10,
-        end_block_num: 0xffffffff,
-        max_messages_in_flight: 500,
-        have_positions: [],
-        irreversible_only: false,
-        fetch_block: true,
-        fetch_traces: false,
-        fetch_deltas: true,
+    this.eosioReader = new StateHistoryBlockReader(
+      `ws://${AppConfig.waxnode_endpoint}:${AppConfig.waxnode_ws_port}`,
+      {
+        ds_threads: 6,
+        logger,
       },
-      auto_start: true,
+    );
+    this.readerRequest = {
+      // Reader rows are live-only; start ahead of the observed head to avoid replaying already-indexed deltas.
+      start_block_num: this.info.head_block_num + 10,
+      end_block_num: 0xffffffff,
+      max_messages_in_flight: 500,
+      have_positions: [],
+      irreversible_only: false,
+      fetch_block: true,
+      fetch_traces: false,
+      fetch_deltas: true,
     };
-
-    this.eosioReader = await createEosioShipReader(eosioReaderConfig);
 
     return this.eosioReader;
   }
 
+  async processShipBlock(shipBlock: ShipBlockResponse) {
+    const rows = await this.shipAdapter.decodeMatchingTableRows(
+      shipBlock,
+      this.tables_interest,
+    );
+
+    for (const row of rows) {
+      if (row.present) {
+        logger.debug(
+          "[" +
+            row.block_num +
+            "]Received row for " +
+            row.code +
+            " - " +
+            row.table,
+        );
+      } else {
+        logger.debug(
+          "[" +
+            row.block_num +
+            "]Deleted row for " +
+            row.code +
+            " - " +
+            row.table,
+        );
+      }
+
+      row.scope = leapNameToUint(row.scope);
+      this.onProcessedData(row);
+    }
+  }
+
   async connect() {
     logger.info("STREAM READER ROWS connecting");
-    const { close$, rows$ } = await this.loadReader();
-
-    // filter ship socket messages stream by type (string for abi and )
-    const existingRows$ = rows$.pipe(
-      filter((row: any) => Boolean(row.present)),
-    );
-    const deletedRows$ = rows$.pipe(filter((row: any) => !row.present));
-
-    existingRows$.subscribe((row) => {
-      logger.debug(
-        "[" +
-          row.block_num +
-          "]Received row for " +
-          row.code +
-          " - " +
-          row.table,
-      );
-      row.scope = leapNameToUint(row.scope);
-      this.onProcessedData(row);
+    const reader = await this.loadReader();
+    reader.consume(async (shipBlock: ShipBlockResponse) => {
+      await this.processShipBlock(shipBlock);
     });
-
-    deletedRows$.subscribe((row) => {
-      logger.debug(
-        "[" +
-          row.block_num +
-          "]Deleted row for " +
-          row.code +
-          " - " +
-          row.table,
-      );
-      row.scope = leapNameToUint(row.scope);
-      this.onProcessedData(row);
-    });
-
-    close$.subscribe(() => logger.info("connection closed"));
+    reader.startProcessing(this.readerRequest);
   }
 }

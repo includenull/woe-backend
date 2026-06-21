@@ -13,7 +13,7 @@ services:
       - server_node_modules:/workspace/apps/server/node_modules
       - web_node_modules:/workspace/apps/web/node_modules
       - api_contracts_node_modules:/workspace/packages/api-contracts/node_modules
-      - ship_reader_node_modules:/workspace/packages/antelope-ship-reader/node_modules
+      - ship_reader_node_modules:/workspace/packages/ship/node_modules
     command: "pnpm --filter @waxonedge/server start_deamon_bigmem deamon=reader"
 #    command: "pnpm --filter @waxonedge/server start_deamon_inspect deamon=reader"
 #    ports:
@@ -33,7 +33,7 @@ services:
       - server_node_modules:/workspace/apps/server/node_modules
       - web_node_modules:/workspace/apps/web/node_modules
       - api_contracts_node_modules:/workspace/packages/api-contracts/node_modules
-      - ship_reader_node_modules:/workspace/packages/antelope-ship-reader/node_modules
+      - ship_reader_node_modules:/workspace/packages/ship/node_modules
     command: "pnpm --filter @waxonedge/server start_deamon_bigmem deamon=reader_rows"
     depends_on:
       - redis
@@ -50,7 +50,7 @@ services:
       - server_node_modules:/workspace/apps/server/node_modules
       - web_node_modules:/workspace/apps/web/node_modules
       - api_contracts_node_modules:/workspace/packages/api-contracts/node_modules
-      - ship_reader_node_modules:/workspace/packages/antelope-ship-reader/node_modules
+      - ship_reader_node_modules:/workspace/packages/ship/node_modules
     ports:
       - "8200"
     command: "pnpm --filter @waxonedge/server start_deamon_bigmem deamon=indexer"
@@ -69,7 +69,7 @@ services:
       - server_node_modules:/workspace/apps/server/node_modules
       - web_node_modules:/workspace/apps/web/node_modules
       - api_contracts_node_modules:/workspace/packages/api-contracts/node_modules
-      - ship_reader_node_modules:/workspace/packages/antelope-ship-reader/node_modules
+      - ship_reader_node_modules:/workspace/packages/ship/node_modules
     command: "pnpm --filter @waxonedge/server start_deamon deamon=liquidity_prices_indexer"
     depends_on:
       - indexer
@@ -86,7 +86,7 @@ services:
       - server_node_modules:/workspace/apps/server/node_modules
       - web_node_modules:/workspace/apps/web/node_modules
       - api_contracts_node_modules:/workspace/packages/api-contracts/node_modules
-      - ship_reader_node_modules:/workspace/packages/antelope-ship-reader/node_modules
+      - ship_reader_node_modules:/workspace/packages/ship/node_modules
     ports:
       - "8220"
     command: "pnpm --filter @waxonedge/server start_deamon_bigmem deamon=last_stats_indexer"
@@ -106,7 +106,7 @@ services:
       - server_node_modules:/workspace/apps/server/node_modules
       - web_node_modules:/workspace/apps/web/node_modules
       - api_contracts_node_modules:/workspace/packages/api-contracts/node_modules
-      - ship_reader_node_modules:/workspace/packages/antelope-ship-reader/node_modules
+      - ship_reader_node_modules:/workspace/packages/ship/node_modules
     ports:
       - "8210"
     command: "pnpm --filter @waxonedge/server start_deamon_bigmem deamon=klines_indexer"
@@ -126,7 +126,7 @@ services:
       - server_node_modules:/workspace/apps/server/node_modules
       - web_node_modules:/workspace/apps/web/node_modules
       - api_contracts_node_modules:/workspace/packages/api-contracts/node_modules
-      - ship_reader_node_modules:/workspace/packages/antelope-ship-reader/node_modules
+      - ship_reader_node_modules:/workspace/packages/ship/node_modules
     command: "pnpm --filter @waxonedge/server start_api"
     ports:
       - 8000:8000
@@ -147,7 +147,7 @@ services:
       - server_node_modules:/workspace/apps/server/node_modules
       - web_node_modules:/workspace/apps/web/node_modules
       - api_contracts_node_modules:/workspace/packages/api-contracts/node_modules
-      - ship_reader_node_modules:/workspace/packages/antelope-ship-reader/node_modules
+      - ship_reader_node_modules:/workspace/packages/ship/node_modules
     ports:
       - 8010:8010
     command: "pnpm --filter @waxonedge/server start_deamon deamon=socketio_server"

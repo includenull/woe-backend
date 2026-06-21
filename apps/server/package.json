@@ -18,8 +18,8 @@
   "license": "MIT",
   "dependencies": {
     "@alcorexchange/alcor-swap-sdk": "1.0.24",
+    "@blocdraig/ship": "workspace:*",
     "@waxonedge/api-contracts": "workspace:*",
-    "@waxonedge/antelope-ship-reader": "workspace:*",
     "@wharfkit/antelope": "1.2.0",
     "@wharfkit/contract": "0.4.3",
     "axios": "0.27.2",
@@ -31,7 +31,6 @@
     "pg": "8.21.0",
     "rate-limiter-flexible": "5.0.5",
     "redis": "4.7.1",
-    "rxjs": "6.6.7",
     "socket.io": "4.8.3",
     "uuid": "9.0.1",
     "pino": "10.3.1",

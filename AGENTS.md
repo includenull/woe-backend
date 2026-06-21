@@ -21,7 +21,7 @@ Long term maintainability is a core priority. If you add new functionality, firs
 - `apps/server` - Node.js Express backend API.
 - `apps/web` - React/Vite UI. This is the main frontend interface.
 - `packages/api-contracts` - API contracts.
-- `packages/antelope-ship-reader` - Antelope Ship Reader.
+- `packages/ship` - Antelope Ship Reader.
 
 ## Task Completion Requirements
 

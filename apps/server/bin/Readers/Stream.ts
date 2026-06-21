@@ -1,11 +1,7 @@
 import {
-  createEosioShipReader,
-  EosioReaderAbisMap,
-  EosioReaderActionFilter,
-  EosioReaderConfig,
-  EosioReaderTableRowFilter,
-  ShipTableDeltaName,
-} from "@waxonedge/antelope-ship-reader";
+  StateHistoryBlockReader,
+  type ShipBlockResponse,
+} from "@blocdraig/ship";
 
 import SwapOrderRow from "../Models/Rows/SwapOrder.js";
 import MarketMatchRow from "../Models/Rows/MarketMatch.js";
@@ -20,8 +16,10 @@ import getRedis from "../Connectors/RedisConnector.js";
 
 import AppConfig from "../../config.js";
 
-import { fetchAbi, getInfo, eosioApi } from "./utils.js";
+import { getInfo } from "./utils.js";
+import { ShipReaderAdapter } from "./shipAdapter.js";
 import logger from "@utils/logger.js";
+import { getBlockTimestamp, makeDateForSmartcontract } from "@utils/utils.js";
 
 export default class StreamReader {
   actions_interest: any[];
@@ -34,6 +32,8 @@ export default class StreamReader {
   initialStartBlock: any;
   lastProcessedBlock: any;
   info: any;
+  shipAdapter: ShipReaderAdapter;
+  readerRequest: any;
 
   constructor(
     actions_interest,
@@ -54,21 +54,11 @@ export default class StreamReader {
     this.initialStartBlock = null;
     this.lastProcessedBlock = 0;
     this.info = null;
+    this.shipAdapter = new ShipReaderAdapter();
+    this.readerRequest = null;
   }
 
   async loadReader() {
-    const table_rows_whitelist: () => EosioReaderTableRowFilter[] = () =>
-      this.actions_interest.map((ai: any) => ({
-        code: ai.account,
-        table: "*",
-      }));
-
-    const actions_whitelist: () => EosioReaderActionFilter[] = () =>
-      this.actions_interest.map((ai: any) => ({
-        code: ai.account,
-        action: ai.actname,
-      }));
-
     const lastSyncsBlock: any[] = [];
     for (const ai of this.actions_interest)
       lastSyncsBlock.push(
@@ -91,115 +81,118 @@ export default class StreamReader {
 
     const start_block_num = Math.max(0, this.initialStartBlock - 2);
 
-    const unique_contract_names = [
-      ...new Set(table_rows_whitelist().map((row) => row.code)),
-    ];
-    const abisArr = await Promise.all(
-      unique_contract_names.map((account_name) => fetchAbi(account_name)),
-    );
-
-    const contract_abis: () => EosioReaderAbisMap = () => {
-      const numap = new Map();
-      abisArr.forEach(({ account_name, abi }) => numap.set(account_name, abi));
-      return numap;
-    };
-
-    const delta_whitelist: () => ShipTableDeltaName[] = () => [
-      "account_metadata",
-      "contract_table",
-      "contract_row",
-      "contract_index64",
-      "resource_usage",
-      "resource_limits_state",
-    ];
-
-    const eosioReaderConfig: EosioReaderConfig = {
-      ws_url:
-        "ws://" + AppConfig.waxnode_endpoint + ":" + AppConfig.waxnode_ws_port,
-      rpc_url: eosioApi,
-      ds_threads: 6,
-      ds_experimental: false,
-      delta_whitelist,
-      table_rows_whitelist,
-      actions_whitelist,
-      contract_abis,
-      request: {
-        start_block_num,
-        end_block_num: 0xffffffff,
-        max_messages_in_flight: 500,
-        have_positions: [],
-        irreversible_only: false,
-        fetch_block: true,
-        fetch_traces: true,
-        fetch_deltas: false,
+    this.eosioReader = new StateHistoryBlockReader(
+      `ws://${AppConfig.waxnode_endpoint}:${AppConfig.waxnode_ws_port}`,
+      {
+        ds_threads: 6,
+        logger,
       },
-      auto_start: true,
+    );
+    this.readerRequest = {
+      start_block_num,
+      end_block_num: 0xffffffff,
+      max_messages_in_flight: 500,
+      have_positions: [],
+      irreversible_only: false,
+      fetch_block: true,
+      fetch_traces: true,
+      fetch_deltas: false,
     };
-
-    this.eosioReader = await createEosioShipReader(eosioReaderConfig);
 
     return this.eosioReader;
   }
 
+  async toReaderBlock(shipBlock: ShipBlockResponse) {
+    const block = shipBlock.block;
+    const transactions = shipBlock.traces.map((trace) => ({
+      transaction_id: trace[1].id,
+      cpu_usage_us: trace[1].cpu_usage_us,
+      net_usage_words: trace[1].net_usage_words,
+      net_usage: trace[1].net_usage,
+    }));
+    const actions = await this.shipAdapter.decodeMatchingActions(
+      shipBlock,
+      this.actions_interest,
+    );
+
+    return {
+      chain_id: "",
+      block_num: shipBlock.this_block.block_num,
+      block_id: shipBlock.this_block.block_id,
+      timestamp:
+        block.timestamp ??
+        makeDateForSmartcontract(
+          getBlockTimestamp(shipBlock.this_block.block_num),
+        ),
+      producer: block.producer ?? "",
+      actions,
+      transactions,
+      table_rows: [],
+      abis: [],
+    };
+  }
+
+  async handleShipBlock(shipBlock: ShipBlockResponse) {
+    const block = await this.toReaderBlock(shipBlock);
+    const redis = await getRedis();
+    await redis.set("READER_BLOCK_NUM", "" + block.block_num);
+
+    if (block.block_num >= this.initialStartBlock) {
+      if (this.lastProcessedBlock > block.block_num) {
+        logger.info(
+          "FORK DETECTED fell from block " +
+            this.lastProcessedBlock +
+            " to " +
+            block.block_num,
+        );
+        await SwapOrderRow.removeHeadAboveBlocknum(block.block_num);
+        await MarketMatchRow.removeHeadAboveBlocknum(block.block_num);
+        await SwapVThreeOrderRow.removeHeadAboveBlocknum(block.block_num);
+        await LiquidityRow.removeHeadAboveBlocknum(block.block_num);
+        await ListingEventRow.removeHeadAboveBlocknum(block.block_num);
+        await LimitLogOrderFillRow.removeHeadAboveBlocknum(block.block_num);
+        await LimitLogOrderCloseRow.removeHeadAboveBlocknum(block.block_num);
+
+        await redis.publish("READER_FORK_DETECTED", "" + block.block_num);
+      }
+      logger.info(
+        "============================================================",
+      );
+      logger.info(
+        "block " + block.block_num + ": " + block.actions.length + " actions",
+      );
+
+      if (block.actions.length) {
+        const dataRows = await this.processBlock(block);
+        this.onProcessedData(dataRows);
+      }
+    }
+  }
+
   async connect() {
     logger.info("STREAM READER connecting");
-    const { blocks$, log$, errors$ } = await this.loadReader();
-    logger.info("Subscribing to blocks");
-    blocks$.subscribe((block: any) => {
-      setTimeout(async () => {
-        const redis = await getRedis();
-        redis.set("READER_BLOCK_NUM", "" + block.block_num);
-
-        if (block.block_num >= this.initialStartBlock) {
-          if (this.lastProcessedBlock > block.block_num) {
-            logger.info(
-              "FORK DETECTED fell from block " +
-                this.lastProcessedBlock +
-                " to " +
-                block.block_num,
-            );
-            await SwapOrderRow.removeHeadAboveBlocknum(block.block_num);
-            await MarketMatchRow.removeHeadAboveBlocknum(block.block_num);
-            await SwapVThreeOrderRow.removeHeadAboveBlocknum(block.block_num);
-            await LiquidityRow.removeHeadAboveBlocknum(block.block_num);
-            await ListingEventRow.removeHeadAboveBlocknum(block.block_num);
-            await LimitLogOrderFillRow.removeHeadAboveBlocknum(block.block_num);
-            await LimitLogOrderCloseRow.removeHeadAboveBlocknum(
-              block.block_num,
-            );
-
-            redis.publish("READER_FORK_DETECTED", "" + block.block_num);
-          }
-          logger.info(
-            "============================================================",
-          );
-          logger.info(
-            "block " +
-              block.block_num +
-              ": " +
-              block.actions.length +
-              " actions",
-          );
-          //const blockElapsed = block.block_num - this.initialStartBlock
-
-          if (block.actions.length) {
-            const dataRows = await this.processBlock(block);
-            this.onProcessedData(dataRows);
-          }
-        }
-      }, 0);
+    const reader = await this.loadReader();
+    logger.info("Consuming SHIP blocks");
+    reader.consume(async (shipBlock: ShipBlockResponse) => {
+      await this.handleShipBlock(shipBlock);
     });
-
-    errors$.subscribe((err) => logger.error({ err }, "Ship reader error"));
-    log$.subscribe((info) => logger.info(info));
+    reader.startProcessing(this.readerRequest);
   }
 
   getSourceActionInterest(action: any) {
-    const match = this.actions_interest.filter(
+    const exactMatch = this.actions_interest.find(
       (ai) => ai.account === action.account && ai.actname === action.name,
     );
 
-    return match.length ? match[0] : null;
+    if (exactMatch) {
+      return exactMatch;
+    }
+
+    const wildcardMatch = this.actions_interest.find(
+      (ai) => ai.account === action.account && ai.actname === "*",
+    );
+
+    return wildcardMatch ? { ...wildcardMatch, actname: action.name } : null;
   }
 
   async processBlock(block: any) {
@@ -229,6 +222,10 @@ export default class StreamReader {
 
     for (const action of block.actions) {
       const actionInterest: any = this.getSourceActionInterest(action);
+      if (!actionInterest) {
+        continue;
+      }
+
       if (actionInterest.classname === "SwapOrderRow") {
         const parsedAction = SwapOrderRow.parseActionData(
           actionInterest.src,

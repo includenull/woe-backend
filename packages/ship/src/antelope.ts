@@ -1,0 +1,174 @@
+import { ABI, Bytes, Serializer } from "@wharfkit/antelope";
+
+import type {
+  RawWaxActionTrace,
+  ShipBlockResponse,
+  ShipContractRow,
+  ShipTableDelta,
+  ShipTableRow,
+  ShipTransactionTrace,
+} from "./types.js";
+
+export type ExtractedShipTrace = {
+  trace: RawWaxActionTrace<string | Uint8Array>;
+  txId: string;
+};
+
+export function deserializeEosioType(
+  type: string,
+  data: Uint8Array | string,
+  abi: ABI,
+  _checkLength = true,
+): unknown {
+  const dataArray =
+    typeof data === "string"
+      ? Uint8Array.from(Buffer.from(data, "hex"))
+      : new Uint8Array(data);
+
+  const bytes = Bytes.from(dataArray);
+  const decoded = Serializer.decode({ data: bytes, abi, type });
+
+  return Serializer.objectify(decoded);
+}
+
+export function serializeEosioType(
+  type: string,
+  value: unknown,
+  abi: ABI,
+): Uint8Array {
+  const encoded = Serializer.encode({ object: value, abi, type });
+  return encoded.array;
+}
+
+export function getActionAbiType(
+  abi: ABI,
+  contract: string,
+  action: string,
+): string {
+  for (const row of abi.actions) {
+    if (String(row.name) === action) {
+      return row.type;
+    }
+  }
+
+  throw new Error(`Type for action not found ${contract}:${action}`);
+}
+
+export function getTableAbiType(
+  abi: ABI,
+  contract: string,
+  table: string,
+): string {
+  for (const row of abi.tables) {
+    if (String(row.name) === table) {
+      return row.type;
+    }
+  }
+
+  throw new Error(`Type for table not found ${contract}:${table}`);
+}
+
+export function extractShipTraces(
+  data: ShipTransactionTrace[],
+): ExtractedShipTrace[] {
+  const result: ExtractedShipTrace[] = [];
+
+  for (const transaction of data) {
+    if (transaction[0] !== "transaction_trace_v0") {
+      throw new Error(
+        `Unsupported transaction response received: ${transaction[0]}`,
+      );
+    }
+
+    if (transaction[1].status !== 0) {
+      continue;
+    }
+
+    const txId = transaction[1].id;
+
+    for (const actionTrace of transaction[1].action_traces) {
+      if (
+        actionTrace[0] !== "action_trace_v0" &&
+        actionTrace[0] !== "action_trace_v1"
+      ) {
+        throw new Error(`Unsupported action trace type ${actionTrace[0]}`);
+      }
+
+      const globalSequence = actionTrace[1].receipt?.[1]?.global_sequence;
+      if (!globalSequence) {
+        continue;
+      }
+
+      result.push({
+        txId,
+        trace: {
+          action_ordinal: actionTrace[1].action_ordinal,
+          creator_action_ordinal: actionTrace[1].creator_action_ordinal,
+          global_sequence: globalSequence,
+          account_ram_deltas: actionTrace[1].account_ram_deltas,
+          act: {
+            account: actionTrace[1].act.account,
+            name: actionTrace[1].act.name,
+            authorization: actionTrace[1].act.authorization,
+            data: actionTrace[1].act.data,
+          },
+          trx_id: txId,
+        },
+      });
+    }
+  }
+
+  return result.sort((left, right) => {
+    const leftSequence = BigInt(left.trace.global_sequence);
+    const rightSequence = BigInt(right.trace.global_sequence);
+
+    if (leftSequence < rightSequence) {
+      return -1;
+    }
+
+    if (leftSequence > rightSequence) {
+      return 1;
+    }
+
+    return 0;
+  });
+}
+
+export function extractShipTableRows(deltas: ShipTableDelta[]): ShipTableRow[] {
+  const result: ShipTableRow[] = [];
+
+  for (const delta of deltas) {
+    if (delta[0] !== "table_delta_v0") {
+      throw new Error(`Unsupported table delta type ${delta[0]}`);
+    }
+
+    if (delta[1].name !== "contract_row") {
+      continue;
+    }
+
+    for (const rowDelta of delta[1].rows) {
+      const contractRow = rowDelta.data as ShipContractRow;
+      if (contractRow[0] !== "contract_row_v0") {
+        continue;
+      }
+
+      result.push({
+        present: rowDelta.present,
+        code: contractRow[1].code,
+        scope: contractRow[1].scope,
+        table: contractRow[1].table,
+        primary_key: contractRow[1].primary_key,
+        payer: contractRow[1].payer,
+        value: contractRow[1].value,
+      });
+    }
+  }
+
+  return result;
+}
+
+export function toBlockTimestamp(
+  block: ShipBlockResponse["block"],
+): string | undefined {
+  return block.timestamp;
+}

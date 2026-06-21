@@ -31,4 +31,8 @@ describe("wharf asset helpers", () => {
     expect(getAssetCode(value)).toBe("WAX");
     expect(getAssetPrecision(value)).toBe(4);
   });
+
+  it("parses assets with units above the safe integer range", () => {
+    expect(getAssetAmount("922337203685477.5807 WAX")).toBe(922337203685477.6);
+  });
 });
