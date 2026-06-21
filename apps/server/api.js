@@ -15,6 +15,7 @@ import LimitLogOrderFillRow from '@models/Rows/LimitLogOrderFill.js';
 import LimitLogOrderCloseRow from '@models/Rows/LimitLogOrderClose.js';
 
 import {delay} from './utils/utils.js';
+import { validateCandlesQuery, validateSwapRoutesQuery, swapRouteQueryParams } from './utils/apiValidation.js';
 import { fetchIndexerApi, fetchKlinesIndexerApi, fetchLastStatsApi } from '@class/apiFetcher.js';
 import { getInfo } from '@connectors/RpcConnector.js';
 
@@ -170,10 +171,9 @@ app.get('/wax_price/:contract/:ticker', async(req, res) => {
 })
 
 app.get('/candles', async(req, res, next) => {
-	const params = ['duration', 'src', 'pair_id', 'is_reversed', 'startAt', 'endAt', 'countBack']
-	
-	if(!params.every(param => Object.keys(req.query).includes(param))) {
-		res.status(400).json({ error: 'Missing params!' });
+	const validation = validateCandlesQuery(req.query);
+	if(!validation.valid) {
+		res.status(400).json({ error: validation.error });
 		return false;
 	}
 
@@ -384,39 +384,14 @@ const fetchRoutes = await fetchIndexerApi('/pairDirectSources/'+req.params.token
  * GET slippage: 50 slippage = 0.5%
 **/
 app.get('/swapRoutes', async (req, res) => {
-	const params = [
-		'token_in',
-		'token_out',
-		'amount_in',
-		'slippage',
-		'receiver',
-		'split_max_routes',
-		'filter_exchange',
-		'filter_type'
-	]
-	
-	if(!params.every(param => Object.keys(req.query).includes(param))) {
-		res.status(400).json({ error: 'Missing params!' });
-		return false;
-	}
-
-	if(Number(req.query.amount_in) <= 0) {
-		res.status(400).json({ error: 'Amount in must be positive' });
-		return false;	
-	}
-
-	if(Number(req.query.slippage) > 10000) {
-		res.status(400).json({ error: 'Slippage can\'t be over 10000' });
-		return false;	
-	}
-
-	if(Number(req.query.split_max_routes) > 10) {
-		res.status(400).json({ error: 'Split max routes can\'t be over 10' });
+	const validation = validateSwapRoutesQuery(req.query);
+	if(!validation.valid) {
+		res.status(400).json({ error: validation.error });
 		return false;	
 	}
 
 	let query = '?'
-	for(const p of params)
+	for(const p of swapRouteQueryParams)
 		query += p+'='+req.query[p]+'&'
 
 	if(req.query.limit !== undefined)

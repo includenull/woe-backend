@@ -1,91 +1,133 @@
 version: '3'
 services:
   reader:
-    build: ./images/node-reader
-    user: "1000:1000"
-    working_dir: /home/node/app
+    build:
+      context: .
+      dockerfile: images/node-reader/Dockerfile
+    user: "root"
+    working_dir: /workspace/apps/server
     environment:
       - NODE_ENV=production
     volumes:
-      - ./app:/home/node/app
-    command: "npm run start_deamon_bigmem deamon=reader"
-#    command: "npm run start_deamon_inspect deamon=reader"
+      - .:/workspace
+      - root_node_modules:/workspace/node_modules
+      - server_node_modules:/workspace/apps/server/node_modules
+      - web_node_modules:/workspace/apps/web/node_modules
+      - api_contracts_node_modules:/workspace/packages/api-contracts/node_modules
+    command: "pnpm --filter @waxonedge/server start_deamon_bigmem deamon=reader"
+#    command: "pnpm --filter @waxonedge/server start_deamon_inspect deamon=reader"
 #    ports:
 #      - "9229:9229"
     depends_on:
       - redis
   readerrows:
-    build: ./images/node-reader
-    user: "1000:1000"
-    working_dir: /home/node/app
+    build:
+      context: .
+      dockerfile: images/node-reader/Dockerfile
+    user: "root"
+    working_dir: /workspace/apps/server
     environment:
       - NODE_ENV=production
     volumes:
-      - ./app:/home/node/app
-    command: "npm run start_deamon_bigmem deamon=reader_rows"
+      - .:/workspace
+      - root_node_modules:/workspace/node_modules
+      - server_node_modules:/workspace/apps/server/node_modules
+      - web_node_modules:/workspace/apps/web/node_modules
+      - api_contracts_node_modules:/workspace/packages/api-contracts/node_modules
+    command: "pnpm --filter @waxonedge/server start_deamon_bigmem deamon=reader_rows"
     depends_on:
       - redis
   indexer:
-    build: ./images/node-reader
-    user: "1000:1000"
-    working_dir: /home/node/app
+    build:
+      context: .
+      dockerfile: images/node-reader/Dockerfile
+    user: "root"
+    working_dir: /workspace/apps/server
     environment:
       - NODE_ENV=production
     volumes:
-      - ./app:/home/node/app
+      - .:/workspace
+      - root_node_modules:/workspace/node_modules
+      - server_node_modules:/workspace/apps/server/node_modules
+      - web_node_modules:/workspace/apps/web/node_modules
+      - api_contracts_node_modules:/workspace/packages/api-contracts/node_modules
     ports:
       - "8200"
-    command: "npm run start_deamon_bigmem deamon=indexer"
+    command: "pnpm --filter @waxonedge/server start_deamon_bigmem deamon=indexer"
     depends_on:
       - redis
   liquiditypricesindexer:
-    build: ./images/node-reader
-    user: "1000:1000"
-    working_dir: /home/node/app
+    build:
+      context: .
+      dockerfile: images/node-reader/Dockerfile
+    user: "root"
+    working_dir: /workspace/apps/server
     environment:
       - NODE_ENV=production
     volumes:
-      - ./app:/home/node/app
-    command: "npm run start_deamon deamon=liquidity_prices_indexer"
+      - .:/workspace
+      - root_node_modules:/workspace/node_modules
+      - server_node_modules:/workspace/apps/server/node_modules
+      - web_node_modules:/workspace/apps/web/node_modules
+      - api_contracts_node_modules:/workspace/packages/api-contracts/node_modules
+    command: "pnpm --filter @waxonedge/server start_deamon deamon=liquidity_prices_indexer"
     depends_on:
       - indexer
   laststatsindexer:
-    build: ./images/node-reader
-    user: "1000:1000"
-    working_dir: /home/node/app
+    build:
+      context: .
+      dockerfile: images/node-reader/Dockerfile
+    user: "root"
+    working_dir: /workspace/apps/server
     environment:
       - NODE_ENV=production
     volumes:
-      - ./app:/home/node/app
+      - .:/workspace
+      - root_node_modules:/workspace/node_modules
+      - server_node_modules:/workspace/apps/server/node_modules
+      - web_node_modules:/workspace/apps/web/node_modules
+      - api_contracts_node_modules:/workspace/packages/api-contracts/node_modules
     ports:
       - "8220"
-    command: "npm run start_deamon_bigmem deamon=last_stats_indexer"
+    command: "pnpm --filter @waxonedge/server start_deamon_bigmem deamon=last_stats_indexer"
     depends_on:
       - indexer
   klinesindexer:
-    build: ./images/node-reader
-    user: "1000:1000"
-    working_dir: /home/node/app
+    build:
+      context: .
+      dockerfile: images/node-reader/Dockerfile
+    user: "root"
+    working_dir: /workspace/apps/server
     stop_grace_period: 60s
     environment:
       - NODE_ENV=production
     volumes:
-      - ./app:/home/node/app
+      - .:/workspace
+      - root_node_modules:/workspace/node_modules
+      - server_node_modules:/workspace/apps/server/node_modules
+      - web_node_modules:/workspace/apps/web/node_modules
+      - api_contracts_node_modules:/workspace/packages/api-contracts/node_modules
     ports:
       - "8210"
-    command: "npm run start_deamon_bigmem deamon=klines_indexer"
+    command: "pnpm --filter @waxonedge/server start_deamon_bigmem deamon=klines_indexer"
     depends_on:
       - indexer
       - redis
   api:
-    build: ./images/node-reader
-    user: "1000:1000"
-    working_dir: /home/node/app
+    build:
+      context: .
+      dockerfile: images/node-reader/Dockerfile
+    user: "root"
+    working_dir: /workspace/apps/server
     environment:
       - NODE_ENV=production
     volumes:
-      - ./app:/home/node/app
-    command: "npm run start_api"
+      - .:/workspace
+      - root_node_modules:/workspace/node_modules
+      - server_node_modules:/workspace/apps/server/node_modules
+      - web_node_modules:/workspace/apps/web/node_modules
+      - api_contracts_node_modules:/workspace/packages/api-contracts/node_modules
+    command: "pnpm --filter @waxonedge/server start_api"
     ports:
       - 8000:8000
     depends_on:
@@ -93,16 +135,22 @@ services:
       - redis
     restart: on-failure
   socketio:
-    build: ./images/node-reader
-    user: "1000:1000"
-    working_dir: /home/node/app
+    build:
+      context: .
+      dockerfile: images/node-reader/Dockerfile
+    user: "root"
+    working_dir: /workspace/apps/server
     environment:
       - NODE_ENV=production
     volumes:
-      - ./app:/home/node/app
+      - .:/workspace
+      - root_node_modules:/workspace/node_modules
+      - server_node_modules:/workspace/apps/server/node_modules
+      - web_node_modules:/workspace/apps/web/node_modules
+      - api_contracts_node_modules:/workspace/packages/api-contracts/node_modules
     ports:
       - 8010:8010
-    command: "npm run start_deamon deamon=socketio_server"
+    command: "pnpm --filter @waxonedge/server start_deamon deamon=socketio_server"
     depends_on:
       - redis
   redis:
@@ -143,3 +191,8 @@ services:
       - POSTGRES_USER=swaplog
       - POSTGRES_PASSWORD=swaplog
       - POSTGRES_DB=swaplog
+volumes:
+  root_node_modules:
+  server_node_modules:
+  web_node_modules:
+  api_contracts_node_modules:

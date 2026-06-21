@@ -1,8 +1,8 @@
 import WebSocket from 'ws';
 import { Subject } from 'rxjs';
 import { RpcInterfaces } from 'eosjs';
-import { EosioReaderConfig, EosioReaderInfo, EosioReaderTableRowsStreamData, EosioReaderBlock, EosioReaderActionStreamData } from './types';
-export * from './types';
+import { EosioReaderConfig, EosioReaderInfo, EosioReaderTableRowsStreamData, EosioReaderBlock, EosioReaderActionStreamData } from './types/index.js';
+export * from './types/index.js';
 export * from 'rxjs';
 export declare const createEosioShipReader: (config: EosioReaderConfig) => Promise<{
     start: () => void;

@@ -37,7 +37,7 @@ export const precise = (price, precision) => {
     price = Number(parts[0])
   }
 
-  const rounded = Number(Math.floor(price + "e" + precision) + "e-" + (precision-additionalExposant) )
+  const rounded = Number(Math.floor(Number(price + "e" + precision)) + "e-" + (precision-additionalExposant) )
   return rounded.toFixed(precision);
 }
 export const littleEndianToDesimal = (string) => {
