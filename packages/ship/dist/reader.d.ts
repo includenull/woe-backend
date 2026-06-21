@@ -1,0 +1,55 @@
+import type { BlockRequestType, ShipBlockResponse, ShipReaderLogger } from "./types.js";
+type BlockConsumer = (block: ShipBlockResponse) => Promise<void> | void;
+export type ShipReaderOptions = {
+    ds_threads: number;
+    logger?: ShipReaderLogger;
+    shipStaleTimeoutMs?: number;
+    shipHealthCheckIntervalMs?: number;
+};
+export default class StateHistoryBlockReader {
+    private readonly endpoint;
+    private readonly options;
+    private ws;
+    private shipAbi;
+    private consumer;
+    private stopped;
+    private connected;
+    private connecting;
+    private processingChain;
+    private deserializeWorkers?;
+    private ackPending;
+    private currentArgs;
+    private lastWebsocketActivityAt;
+    private lastShipMessageAt;
+    private healthTimer?;
+    private reconnectTimer?;
+    constructor(endpoint: string, options: ShipReaderOptions);
+    consume(consumer: BlockConsumer): void;
+    startProcessing(request: BlockRequestType): void;
+    stopProcessing(): void;
+    restartProcessing(startBlockNum?: number): void;
+    private get logger();
+    private connect;
+    private onOpen;
+    private onPong;
+    private onMessage;
+    private enqueueBlockResult;
+    private onClose;
+    private recordWebsocketActivity;
+    private recordShipMessageActivity;
+    private get shipStaleTimeoutMs();
+    private get shipHealthCheckIntervalMs();
+    private startHealthCheck;
+    private stopHealthCheck;
+    private clearReconnectTimer;
+    private checkConnectionHealth;
+    private requestBlocks;
+    private send;
+    private flushAcksIfNeeded;
+    private initializeDeserializeWorkers;
+    private buildBlockResponse;
+    private deserializeBlock;
+    private deserializeParallel;
+}
+export {};
+//# sourceMappingURL=reader.d.ts.map
