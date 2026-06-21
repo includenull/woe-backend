@@ -2,6 +2,7 @@ import { fetchTable, fetchFullTable } from '../../Connectors/RpcConnector.js'
 import getRedis from '../../Connectors/RedisConnector.js'
 import AppConfig from '../../../config.js'
 import { delay } from '../../../utils/utils.js'
+import logger from '@utils/logger.js';
 
 export default class SubIndexer {
 	constructor(getRpcIndexer, updateSync) {
@@ -26,7 +27,7 @@ export default class SubIndexer {
 				callback(row)
 			})
 		} catch(err) {
-			console.log('Error while listening to queue '+qstream, err)
+			logger.error({ err: err }, 'Error while listening to queue '+qstream)
 		}
 	}
 
@@ -40,7 +41,7 @@ export default class SubIndexer {
 		let ret = {}
 
 		for(const ti of this.tables_interest) {
-			console.log('fetch '+ti.code+' '+ti.table+' for '+scopes.length+' scopes')
+			logger.info('fetch '+ti.code+' '+ti.table+' for '+scopes.length+' scopes')
 			if(ret[ti.code] === undefined)
 				ret[ti.code] = {}
 
@@ -57,7 +58,7 @@ export default class SubIndexer {
 						// console.log(i+1 + ' / ' + scopes.length + ' fetching scope '+scope+' table '+ti.table)
 						ret[ti.code][ti.table][scope].rows = await this.fetchCodeTableScope(ti.code, ti.table, scope)
 						if((i + 1) % 50 === 0 || i + 1 === scopes.length)
-							console.log((i + 1)+' / '+scopes.length+' fetched '+ti.code+' '+ti.table)
+							logger.info((i + 1)+' / '+scopes.length+' fetched '+ti.code+' '+ti.table)
 						resolve(true)
 					}, i*AppConfig.rpc_delay);
 				}));
@@ -72,7 +73,7 @@ export default class SubIndexer {
 			    // console.log(`Task ${i + 1} was fulfilled:`, result.value);
 			  } else {
 			    // Task was rejected, you can access the reason using result.reason
-			    console.error(`Task ${i + 1} was rejected:`, result.reason);
+			    logger.error({ err: result.reason }, `Task ${i + 1} was rejected:`);
 			  }
 			}
 		}

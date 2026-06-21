@@ -13,6 +13,7 @@ import KlinesWorker from '../Models/KlinesWorker.js'
 import {delay} from '../../utils/utils.js'
 import { fetchIndexerApi } from '@class/apiFetcher.js';
 import ApiKlines from '@indexers/Api/Klines.js'
+import logger from '@utils/logger.js';
 
 class KlinesIndexer {
 	constructor() {
@@ -45,37 +46,37 @@ class KlinesIndexer {
 		this.listenUpdateMarket()
 		this.doCatchupWork()
 
-		console.log('Set api status to ready')
+		logger.info('Set api status to ready')
 		this.apiKlines.setReady(true)
 	}
 
   async sigterm() {
-    console.log('STOP NEW CAPTCHING UP WORK....')
+    logger.info('STOP NEW CAPTCHING UP WORK....')
     this.isTerminating = true
 
     while(!this.catchupWorkers.areAllWorkersAvailable()) {
-      console.log('Wait for '+this.catchupWorkers.countAllWorkersOnWork() + '/' + this.catchupWorkers.max_workers+' busy workers');
+      logger.info('Wait for '+this.catchupWorkers.countAllWorkersOnWork() + '/' + this.catchupWorkers.max_workers+' busy workers');
       await delay(500);
     }
 
-    console.log('ALL WORKS DONE !! EXITING')
+    logger.info('ALL WORKS DONE !! EXITING')
   }
 
 	async waitForApiToBeReady() {
 		const api_status = await fetchIndexerApi('/status')
 
 		if(api_status === [] || api_status?.ready === false) {
-			console.log('Indexer api not ready, wait 30 seconds')
+			logger.info('Indexer api not ready, wait 30 seconds')
 			await delay(30000)
 			return await this.waitForApiToBeReady()
 		}
 		
-		console.log('Indexer api is ready')
+		logger.info('Indexer api is ready')
 		return;
 	}
 
 	async init() {
-		console.log('Check if indexer api is ready')
+		logger.info('Check if indexer api is ready')
 		await this.waitForApiToBeReady()
 
 		const klinesSyncTable = new KlinesSyncTable();
@@ -120,13 +121,13 @@ class KlinesIndexer {
 	async doCatchupWork() {
 		while(true) {
 			if(!this.catchupRunning) {
-				console.log('Catchup work is on pause')
+				logger.info('Catchup work is on pause')
 				await delay(5000)
 				continue;
 			}
 
 			const rows = this.klinesSync.findRowsToCatchup()
-			console.log(rows.length+' charts to compute'+((this.isTerminating) ? ' - TERMINATING': ''))
+			logger.info(rows.length+' charts to compute'+((this.isTerminating) ? ' - TERMINATING': ''))
 
       if(!this.isTerminating) {
   			for(const row of rows) {
@@ -136,7 +137,7 @@ class KlinesIndexer {
             continue;
 
   				if(!this.catchupWorkers.hasAvailableWorker()) {
-  					console.log('No available workers')
+  					logger.info('No available workers')
   					break;
   				}
 
@@ -170,7 +171,7 @@ class KlinesIndexer {
       }
 
 			if(!rows.length) {
-				console.log('Nothing to catchup')
+				logger.info('Nothing to catchup')
 				await delay(2000)
 			}
 			else
@@ -186,12 +187,12 @@ class KlinesIndexer {
 
 				const marketFetch = await fetchIndexerApi('/market/'+row.src+'/'+row.pair_id)
 				if(!['', undefined].includes(marketFetch)) {
-					console.log('Market '+row.src+' '+row.pair_id+' downloaded from indexer')
+					logger.info('Market '+row.src+' '+row.pair_id+' downloaded from indexer')
 					this.markets.push(marketFetch)
 					market = [marketFetch]
 				}
 				else {
-					console.log('Market '+row.src+' '+row.pair_id+' not existing yet')
+					logger.info('Market '+row.src+' '+row.pair_id+' not existing yet')
 					return null;
 				}
 			}
@@ -210,12 +211,12 @@ class KlinesIndexer {
 			if(!poolV3.length) {
 				const poolv3Fetch = await fetchIndexerApi('/poolv3/'+row.src+'/'+row.pair_id)
 				if(!['', undefined].includes(poolv3Fetch)) {
-					console.log('Poolv3 '+row.src+' '+row.pair_id+' downloaded from indexer')
+					logger.info('Poolv3 '+row.src+' '+row.pair_id+' downloaded from indexer')
 					this.poolsV3.push(poolv3Fetch)
 					poolV3 = [poolv3Fetch]
 				}
 				else {
-					console.log('Poolv3 '+row.src+' '+row.pair_id+' not existing yet')
+					logger.info('Poolv3 '+row.src+' '+row.pair_id+' not existing yet')
 					return null;
 				}
 			}
@@ -235,12 +236,12 @@ class KlinesIndexer {
 
 				const poolFetch = await fetchIndexerApi('/pool/'+row.src+'/'+row.pair_id)
 				if(!['', undefined].includes(poolFetch)) {
-					console.log('Pool '+row.src+' '+row.pair_id+' downloaded from indexer')			
+					logger.info('Pool '+row.src+' '+row.pair_id+' downloaded from indexer')			
 					this.pools.push(poolFetch)
 					pool = [poolFetch]
 				}
 				else {
-					console.log('Pool '+row.src+' '+row.pair_id+' not existing yet')
+					logger.info('Pool '+row.src+' '+row.pair_id+' not existing yet')
 					return null;
 				}
 			}
@@ -266,7 +267,7 @@ class KlinesIndexer {
 
     const table = new KlinesTable(source, pair_id);
     await table.create();
-    console.log('TABLE CREATED FOR '+source+'@'+pair_id);
+    logger.info('TABLE CREATED FOR '+source+'@'+pair_id);
 
     // klinesSync has been reseted and table will be processed again inside catchupWork
   }
@@ -282,7 +283,7 @@ class KlinesIndexer {
 			await KlinesIndexer.syncPoolWithDatabase(workerId, source)
 		}
 
-		console.log(workerId+': completed!!!')
+		logger.info(workerId+': completed!!!')
 		// wait for console.log to print before worker is terminated
 		await delay(100)
 
@@ -290,7 +291,7 @@ class KlinesIndexer {
 	}
 
 	static async syncPoolWithDatabase(workerId, pool) {
-		console.log(workerId+': Sync klines for '+pool.src+'_'+pool.pairid)
+		logger.info(workerId+': Sync klines for '+pool.src+'_'+pool.pairid)
 		const supportedDurations = KlineRows.getSupportedDurations()//.filter(d => d === '1m')
 
 		for(const duration of supportedDurations) {
@@ -299,15 +300,15 @@ class KlinesIndexer {
   			await klineRows.syncWithDatabase(workerId)
       }
       catch(e) {
-        console.log('error syncPoolWithDatabase')
+        logger.error('error syncPoolWithDatabase')
         if(e?.code === '42P01') {
-          console.log('Candle table for this pair doesn\'t exist fixing');
+          logger.info('Candle table for this pair doesn\'t exist fixing');
           await KlinesIndexer.fixUnexistingTable(pool.src, pool.pairid);
         }
         else {
-          console.log(e);
+          logger.error(e);
         }
-        console.log('ABORTING processing candle !!!')
+        logger.info('ABORTING processing candle !!!')
         await delay(1000);
         return true;
       }
@@ -317,7 +318,7 @@ class KlinesIndexer {
 	}
 
 	static async syncMarketWithDatabase(workerId, market) {
-		console.log(workerId+': Sync klines for '+market.src+'_'+market.id)
+		logger.info(workerId+': Sync klines for '+market.src+'_'+market.id)
 		const supportedDurations = KlineRows.getSupportedDurations()//.filter(d => d === '1m')
 
 		for(const duration of supportedDurations) {
@@ -326,15 +327,15 @@ class KlinesIndexer {
   			await klineRows.syncWithDatabase(workerId)
       }
       catch(e) {
-        console.log('error syncMarketWithDatabase')
+        logger.error('error syncMarketWithDatabase')
         if(e?.code === '42P01') {
-          console.log('Candle table for this pair doesn\'t exist fixing');
+          logger.info('Candle table for this pair doesn\'t exist fixing');
           await KlinesIndexer.fixUnexistingTable(market.src, market.id);
         }
         else {
-          console.log(e);
+          logger.error(e);
         }
-        console.log('ABORTING processing candle !!!')
+        logger.info('ABORTING processing candle !!!')
         await delay(1000);
         return true;
       }
@@ -344,7 +345,7 @@ class KlinesIndexer {
 	}
 
 	static async syncPoolV3WithDatabase(workerId, poolV3) {
-		console.log(workerId+': Sync klines for '+poolV3.src+'_'+poolV3.id)
+		logger.info(workerId+': Sync klines for '+poolV3.src+'_'+poolV3.id)
 		const supportedDurations = KlineRows.getSupportedDurations()//.filter(d => d === '1m')
 
 		for(const duration of supportedDurations) {
@@ -353,15 +354,15 @@ class KlinesIndexer {
   			await klineRows.syncWithDatabase(workerId)
       }
       catch(e) {
-        console.log('error syncPoolV3WithDatabase')
+        logger.error('error syncPoolV3WithDatabase')
         if(e?.code === '42P01') {
-          console.log('Candle table for this pair doesn\'t exist fixing');
+          logger.info('Candle table for this pair doesn\'t exist fixing');
           await KlinesIndexer.fixUnexistingTable(poolV3.src, poolV3.id);
         }
         else {
-          console.log(e);
+          logger.error(e);
         }
-        console.log('ABORTING processing candle !!!')
+        logger.info('ABORTING processing candle !!!')
         await delay(1000);
         return true;
       }
@@ -376,18 +377,18 @@ class KlinesIndexer {
 		try {
 			redis.subscribe('READER_FORK_DETECTED', async (block_num) => {
 				block_num = Number(block_num)
-				console.log('Fork detected at block_num '+block_num)
+				logger.info('Fork detected at block_num '+block_num)
 				this.catchupRunning = false
 
 				while(!this.catchupWorkers.areAllWorkersAvailable()) {
-					console.log('Not all workers are available, wait 1 more second...')
+					logger.info('Not all workers are available, wait 1 more second...')
 					await delay(1000)
 				}
 
 				// Remove all candles above block num
 				const rows = this.klinesSync.findRowsAboveBlocknum(block_num)
 				for(const row of rows) {
-					console.log('Remove candles above block_num '+block_num+' for '+row.src+' '+row.pair_id)
+					logger.info('Remove candles above block_num '+block_num+' for '+row.src+' '+row.pair_id)
 					await KlineRows.removeAboveBlocknum(row.src, row.pair_id, block_num)
 					await this.klinesSync.update({
 						src: row.src,
@@ -401,7 +402,7 @@ class KlinesIndexer {
 				this.catchupRunning = true
 			});
 		} catch (err) {
-			console.error(`Error consuming messages from queue ${queueName}:`, err.code);
+			logger.error({ err: err.code }, `Error consuming messages from queue ${queueName}:`);
 		}
 	}
 
@@ -409,14 +410,14 @@ class KlinesIndexer {
 		const redis = await getRedis('klinesindexer_subscriber')
 
 		const queueName = 'swapOrders_insert_klinesIndexer'
-		console.log('Connect to updatePool')
+		logger.info('Connect to updatePool')
 	  try {
 	  	redis.subscribe(queueName, async (data) => {
 	      data = JSON.parse(data)
 				const row = this.klinesSync.findRow(data.src, data.pair_id)
 
 				if(row === null)
-					console.log('listenUpdatePool: pool '+data.src+':'+data.pair_id+' not existing yet. updated_at_time = 0')
+					logger.info('listenUpdatePool: pool '+data.src+':'+data.pair_id+' not existing yet. updated_at_time = 0')
 
 				//console.log('listenUpdatePool: update '+data.src+' '+data.pair_id)
 				await this.klinesSync.update({
@@ -430,7 +431,7 @@ class KlinesIndexer {
 				return true
 			})
     } catch (err) {
-      console.error(`Error consuming messages from queue ${queueName}:`, err.code);
+      logger.error({ err: err.code }, `Error consuming messages from queue ${queueName}:`);
     }
 	}
 
@@ -438,14 +439,14 @@ class KlinesIndexer {
 		const redis = await getRedis('klinesindexer_subscriber')
 
 		const queueName = 'swapVThreeOrders_insert'
-		console.log('Connect to updatePoolV3')
+		logger.info('Connect to updatePoolV3')
 	  try {
 	  	redis.subscribe(queueName, async (data) => {
 	      data = JSON.parse(data)
 				const row = this.klinesSync.findRow(data.src, data.pair_id)
 
 				if(row === null)
-					console.log('listenUpdatePoolV3: pool '+data.src+':'+data.pair_id+' not existing yet. updated_at_time = 0')
+					logger.info('listenUpdatePoolV3: pool '+data.src+':'+data.pair_id+' not existing yet. updated_at_time = 0')
 
 				//console.log('listenUpdatePoolV3: update '+data.src+' '+data.pair_id)
 				await this.klinesSync.update({
@@ -459,7 +460,7 @@ class KlinesIndexer {
 				return true
 			})
     } catch (err) {
-      console.error(`Error consuming messages from queue ${queueName}:`, err.code);
+      logger.error({ err: err.code }, `Error consuming messages from queue ${queueName}:`);
     }
 	}
 
@@ -467,7 +468,7 @@ class KlinesIndexer {
 		const redis = await getRedis('klinesindexer_subscriber')
 
 		const queueName = 'marketMatches_insert_klinesIndexer'
-		console.log('Connect to updateMarket')
+		logger.info('Connect to updateMarket')
 	  try {
 			redis.subscribe(queueName, async (data) => {
 				data = JSON.parse(data)
@@ -476,7 +477,7 @@ class KlinesIndexer {
 				const row = this.klinesSync.findRow(src, data.market_id)
 
 				if(row === null)
-					console.log('listenUpdateMarket: market '+data.src+':'+data.market_id+' not existing yet. updated_at_time = 0')
+					logger.info('listenUpdateMarket: market '+data.src+':'+data.market_id+' not existing yet. updated_at_time = 0')
 
 				//console.log('listenUpdateMarket: update '+market.src+' '+market.id)
 				await this.klinesSync.update({
@@ -490,7 +491,7 @@ class KlinesIndexer {
 				return true
 			})
     } catch (err) {
-      console.error(`Error consuming messages from queue ${queueName}:`, err.code);
+      logger.error({ err: err.code }, `Error consuming messages from queue ${queueName}:`);
     }
 	}
 }

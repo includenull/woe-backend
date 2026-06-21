@@ -1,3 +1,4 @@
+import logger from '@utils/logger.js';
 class Market {
   constructor(marketid, src, token0, token1, min_buy, min_sell, frozen, fee) {
     this.id = marketid
@@ -84,8 +85,8 @@ class Market {
       return out * (1 - (market.fee / 10000));
     }
     catch(e) {
-      console.log(orderbook, 'orderbook')
-      console.log(e, 'error');
+      logger.info({ orderbook }, 'orderbook')
+      logger.error({ err: e }, 'error');
     }
 
     return 0

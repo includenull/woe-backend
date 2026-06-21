@@ -3,6 +3,7 @@ import Tokens from '@models/Tokens.js'
 import PoolV3 from '@models/PoolV3.js'
 import RouteMap from '@models/RouteMap.js';
 import SwapRoutes from '@models/SwapRoutes.js';
+import logger from '@utils/logger.js';
 
 class ApiIndexer {
 	constructor(getRpcIndexer, getRowsIndexer) {
@@ -229,7 +230,7 @@ class ApiIndexer {
 		});
 
 		this.api.listen(8200, () => {
-			console.log('Indexer Api listening on port 8200!')
+			logger.info('Indexer Api listening on port 8200!')
 		});
 	}
 }

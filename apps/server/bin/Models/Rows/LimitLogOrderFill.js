@@ -19,6 +19,7 @@ import { parseDateFromSmartcontract } from '@utils/utils.js';
 import { Asset } from "@wharfkit/antelope";
 import getDb from '@connectors/DbPGConnector.js';
 import LimitLogOrderCloseRow from '@models/Rows/LimitLogOrderClose.js';
+import logger from '@utils/logger.js';
 
 export default class LimitLogOrderFillRow {
   constructor({
@@ -89,7 +90,7 @@ export default class LimitLogOrderFillRow {
       ).del()
     }
     catch(err) {
-      console.log('Failed to remove rows above block', err)
+      logger.error({ err: err }, 'Failed to remove rows above block')
     }
   }
 
@@ -104,7 +105,7 @@ export default class LimitLogOrderFillRow {
       });
     }
     catch(err) {
-      console.log('failed to set rows to history', err)
+      logger.error({ err: err }, 'failed to set rows to history')
     }
   }
 
@@ -187,19 +188,19 @@ export default class LimitLogOrderFillRow {
                ++totalUpd
             }
             catch(e) {
-              console.log('HistoryReader updateLimitLogOrderFill error')
-              console.log(e)
+              logger.error('HistoryReader updateLimitLogOrderFill error')
+              logger.error(e)
             }
           }
         } else {
-          console.log('HistoryReader saveLimitLogOrderFill error')
-          console.log(e)
+          logger.error('HistoryReader saveLimitLogOrderFill error')
+          logger.error(e)
         }
       }
     }
-    console.log('New LimitLogOrderFill saved', totalIns)
-    console.log('LimitLogOrderFill archived', totalUpd)
-    console.log('Already received', logOrderFills.length-totalIns-totalUpd)
+    logger.info({ totalIns }, 'New LimitLogOrderFill saved')
+    logger.info({ totalUpd }, 'LimitLogOrderFill archived')
+    logger.info({ data: logOrderFills.length-totalIns-totalUpd }, 'Already received')
 
     await LimitLogOrderCloseRow.saveLogs(logOrderFullFill);
   }
@@ -273,7 +274,7 @@ export default class LimitLogOrderFillRow {
       return await query;
     } catch (error) {
       // Handle any errors
-      console.error(error);
+      logger.error(error);
       //throw error;
     }
   }

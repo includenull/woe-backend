@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { delay } from '@utils/utils.js'
+import logger from '@utils/logger.js';
 
 const serverRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
@@ -29,12 +30,12 @@ export default class BanlistLoader {
         this.lastModifiedTime = modifiedTime;
         this.isLoading = false;
 
-        console.log(`Reloaded banlist of ${this.origin } from ${this.filePath}`);
+        logger.info(`Reloaded banlist of ${this.origin } from ${this.filePath}`);
       }
 
       return this.loadedContent;
     } catch (err) {
-      console.warn(`Failed to reload file: ${err.message}`);
+      logger.warn(`Failed to reload file: ${err.message}`);
       return this.loadedContent;
     }
   }

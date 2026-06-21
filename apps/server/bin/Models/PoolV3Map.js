@@ -5,6 +5,7 @@ import PoolV3 from './PoolV3.js'
 
 import AppConfig from '../../config.js'
 import BanlistLoader from '@models/BanlistLoader.js';
+import logger from '@utils/logger.js';
 
 export default class PoolV3Map {
 	constructor() {
@@ -78,7 +79,7 @@ export default class PoolV3Map {
 			return true
 		}
 		catch(e) {
-			console.log(e)
+			logger.error(e)
 			return false
 		}
 	}
@@ -163,7 +164,7 @@ export default class PoolV3Map {
 	insertPoolWithRow(row) {
 		const pool = PoolV3Map.createPoolFromRow(row)
 		this.savePool(pool)
-		console.log('insertPoolWithRow', pool)
+		logger.info({ pool }, 'insertPoolWithRow')
 	}
 
 	updatePoolWithRow(row) {
@@ -175,7 +176,7 @@ export default class PoolV3Map {
 	deletePoolWithRow(row) {
 		const pool = PoolV3Map.createPoolFromRow(row)
 		this.remove(pool)
-		console.log('deletePoolWithRow', pool)
+		logger.info({ pool }, 'deletePoolWithRow')
 	}
 
 }

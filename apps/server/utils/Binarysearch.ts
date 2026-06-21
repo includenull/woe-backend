@@ -1,7 +1,8 @@
+import logger from './logger.js';
 /**
  * Example usage
   const optimalBidSplit = optimize(pool0, pool1, 0.1, 1000);
-	console.log("Optimal bid split:", optimalBidSplit);
+	logger.info({ optimalBidSplit }, "Optimal bid split:");
  */
 
 // Define the iter optimization parameters

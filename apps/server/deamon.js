@@ -9,16 +9,17 @@ import LastStatsIndexer from '@indexers/LastStats.js'
 import KlinesIndexer from '@indexers/Klines.js'
 
 import { delay } from '@utils/utils.js';
+import logger from '@utils/logger.js';
 
 let CURRENT_DEAMON = null;
 
 process.on("SIGTERM", async () => {
-  console.log("Received SIGTERM signal");
+  logger.info("Received SIGTERM signal");
 
   if(CURRENT_DEAMON !== null && typeof CURRENT_DEAMON.sigterm === 'function')
     await CURRENT_DEAMON.sigterm();
   else {
-    console.log('SIGTERM handle not implemented for '+argv.deamon);
+    logger.info('SIGTERM handle not implemented for '+argv.deamon);
   }
 
   process.exit(0); // Exit cleanly
@@ -93,6 +94,6 @@ for(let i = 0; i < rawArgv.length; ++i) {
 }
 
 main(argv).catch((err) => {
-  console.error(err.message);
+  logger.error(err);
   process.exit(1);
 });

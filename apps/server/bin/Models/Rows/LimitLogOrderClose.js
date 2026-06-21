@@ -14,6 +14,7 @@ unit_price: '6447555'
 import { parseDateFromSmartcontract } from '@utils/utils.js';
 import { Asset } from "@wharfkit/antelope";
 import getDb from '@connectors/DbPGConnector.js';
+import logger from '@utils/logger.js';
 
 export default class LimitLogOrderCloseRow {
   constructor({
@@ -76,7 +77,7 @@ export default class LimitLogOrderCloseRow {
       ).del()
     }
     catch(err) {
-      console.log('Failed to remove rows above block', err)
+      logger.error({ err: err }, 'Failed to remove rows above block')
     }
   }
 
@@ -91,7 +92,7 @@ export default class LimitLogOrderCloseRow {
       });
     }
     catch(err) {
-      console.log('failed to set rows to history', err)
+      logger.error({ err: err }, 'failed to set rows to history')
     }
   }
 
@@ -141,19 +142,19 @@ export default class LimitLogOrderCloseRow {
                ++totalUpd
             }
             catch(e) {
-              console.log('HistoryReader updateLimitLogOrderClose error')
-              console.log(e)
+              logger.error('HistoryReader updateLimitLogOrderClose error')
+              logger.error(e)
             }
           }
         } else {
-          console.log('HistoryReader saveLimitLogOrderClose error')
-          console.log(e)
+          logger.error('HistoryReader saveLimitLogOrderClose error')
+          logger.error(e)
         }
       }
     }
-    console.log('New LimitLogOrderClose saved', totalIns)
-    console.log('LimitLogOrderClose archived', totalUpd)
-    console.log('Already received', logOrderCloses.length-totalIns-totalUpd)
+    logger.info({ totalIns }, 'New LimitLogOrderClose saved')
+    logger.info({ totalUpd }, 'LimitLogOrderClose archived')
+    logger.info({ data: logOrderCloses.length-totalIns-totalUpd }, 'Already received')
   }
 
   static async fetchRows({
@@ -219,7 +220,7 @@ export default class LimitLogOrderCloseRow {
       return await query;
     } catch (error) {
       // Handle any errors
-      console.error(error);
+      logger.error(error);
       //throw error;
     }
   }

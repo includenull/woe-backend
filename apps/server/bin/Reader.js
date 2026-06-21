@@ -21,6 +21,7 @@ import LimitLogOrderFillRow from '@models/Rows/LimitLogOrderFill.js';
 import LimitLogOrderCloseRow from '@models/Rows/LimitLogOrderClose.js';
 
 import { delay } from '../utils/utils.js'
+import logger from '@utils/logger.js';
 
 class Reader {
 	constructor(actions_interest) {
@@ -36,42 +37,42 @@ class Reader {
 	async onProcessedData(datas) {
     const dataSwapOrderRow = datas.filter(d => d instanceof SwapOrderRow)
     if(dataSwapOrderRow.length) {
-      console.log(dataSwapOrderRow.length + ' swaps to process')
+      logger.info(dataSwapOrderRow.length + ' swaps to process')
       SwapOrderRow.saveSwaps(dataSwapOrderRow)
     }
     const dataMarketMatchRow = datas.filter(d => d instanceof MarketMatchRow)
     if(dataMarketMatchRow.length) {
-      console.log(dataMarketMatchRow.length + ' market matches to process')
+      logger.info(dataMarketMatchRow.length + ' market matches to process')
       MarketMatchRow.saveMatches(dataMarketMatchRow)
     }
     const dataSwapVThreeOrderRow = datas.filter(d => d instanceof SwapVThreeOrderRow)
     if(dataSwapVThreeOrderRow.length) {
-    	console.log(dataSwapVThreeOrderRow.length + ' swaps v3 to process')
+    	logger.info(dataSwapVThreeOrderRow.length + ' swaps v3 to process')
     	SwapVThreeOrderRow.saveSwaps(dataSwapVThreeOrderRow)
     }
     const dataLiquidityRow = datas.filter(d => d instanceof LiquidityRow)
     if(dataLiquidityRow.length) {
-    	console.log(dataLiquidityRow.length + ' liquidity changes to process')
+    	logger.info(dataLiquidityRow.length + ' liquidity changes to process')
     	LiquidityRow.saveChanges(dataLiquidityRow)
     }
     const dataLogpoolRow = datas.filter(d => d instanceof LogpoolRow)
     if(dataLogpoolRow.length) {
-    	console.log(dataLogpoolRow.length + ' logpool to process')
+    	logger.info(dataLogpoolRow.length + ' logpool to process')
     	LogpoolRow.saveLogs(dataLogpoolRow)
     }
     const dataListingEventRow = datas.filter(d => d instanceof ListingEventRow)
     if(dataListingEventRow.length) {
-    	console.log(dataListingEventRow.length + ' listing events to process')
+    	logger.info(dataListingEventRow.length + ' listing events to process')
     	ListingEventRow.saveEvents(dataListingEventRow)
     }
     const dataLimitLogOrderFillRow = datas.filter(d => d instanceof LimitLogOrderFillRow);
     if(dataLimitLogOrderFillRow.length) {
-      console.log(dataLimitLogOrderFillRow.length + ' limit log order fill to process');
+      logger.info(dataLimitLogOrderFillRow.length + ' limit log order fill to process');
       LimitLogOrderFillRow.saveLogs(dataLimitLogOrderFillRow);
     }
     const dataLimitLogOrderCloseRow = datas.filter(d => d instanceof LimitLogOrderCloseRow);
     if(dataLimitLogOrderCloseRow.length) {
-      console.log(dataLimitLogOrderCloseRow.length + ' limit log order close to process');
+      logger.info(dataLimitLogOrderCloseRow.length + ' limit log order close to process');
       LimitLogOrderCloseRow.saveLogs(dataLimitLogOrderCloseRow);
     }
 	}

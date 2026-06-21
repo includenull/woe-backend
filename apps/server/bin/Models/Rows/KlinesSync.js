@@ -1,4 +1,5 @@
 import getDb from '../../Connectors/DbPGConnector.js'
+import logger from '@utils/logger.js';
 
 export class KlinesSync {
 	constructor({
@@ -89,7 +90,7 @@ export class KlinesSyncRows {
 		      this.rows[rowIndex].last_trade_block = last_trade_block
 				}
 				catch(e) {
-					console.log(e)
+					logger.error(e)
 					process.exit(1)
 				}
 			} // else nothing to update
@@ -112,7 +113,7 @@ export class KlinesSyncRows {
 				}))
 			}
 			catch(e) {
-				console.log("Error while inserting klinesSync", e)
+				logger.error({ err: e }, "Error while inserting klinesSync")
 			}
 		}
 	}

@@ -4,6 +4,7 @@ import { Readable } from 'stream';
 import { finished } from 'stream/promises';
 import { join, extname } from 'path';
 import { exec } from 'child_process';
+import logger from '@utils/logger.js';
 
 const downloadDirectory = './tokens_logo';
 
@@ -14,7 +15,7 @@ const alcorLogoDir = alcorRepoDownloadPath+'/assets/tokens/wax/'
 
 async function downloadFile(url, destPath) {
   try {
-  	console.log('Download '+url+' to '+destPath)
+  	logger.info('Download '+url+' to '+destPath)
     const response = await fetch(url);
 
     if (!response.ok) {
@@ -25,7 +26,7 @@ async function downloadFile(url, destPath) {
   	await finished(Readable.fromWeb(response.body).pipe(destStream));
 
   } catch (error) {
-    console.error('Error downloading file', error);
+    logger.error({ err: error }, 'Error downloading file');
   }
 }
 
@@ -50,25 +51,25 @@ async function deleteDirectory(directoryPath) {
     // Delete the empty directory
     await rm(directoryPath, { recursive: true });
 
-    console.log(`Directory deleted: ${directoryPath}`);
+    logger.info(`Directory deleted: ${directoryPath}`);
   } catch (error) {
-    console.error(`Error deleting directory ${directoryPath}:`, error.message);
+    logger.error({ err: error.message }, `Error deleting directory ${directoryPath}:`);
   }
 }
 
 function gitClone(repositoryUrl, outputPath) {
   return new Promise((resolve, reject) => {
-  	console.log('Cloning repository '+repositoryUrl)
+  	logger.info('Cloning repository '+repositoryUrl)
     const command = `git clone ${repositoryUrl} ${outputPath}`;
 
     exec(command, (error, stdout, stderr) => {
       if (error) {
-        console.error(`Error executing git clone: ${error.message}`);
+        logger.error(`Error executing git clone: ${error.message}`);
         reject(error);
         return;
       }
 
-      console.log(`Repository cloned successfully to: ${outputPath}`);
+      logger.info(`Repository cloned successfully to: ${outputPath}`);
       resolve();
     });
   });
@@ -93,11 +94,11 @@ async function eosCafeCopyAndRenameFiles(repoDir, DESTDIR) {
       const destPath = join(DESTDIR, dest_file);
       
       await copyFile(sourcePath, destPath);
-      console.log(`File copied and renamed: ${filename}`);
+      logger.info(`File copied and renamed: ${filename}`);
   	}
 	}
 	catch(error) {
-		console.error('Error:', error.message);
+		logger.error({ err: error.message }, 'Error:');
 	}
 }
 
@@ -105,7 +106,7 @@ async function alcorCopyAndRenameFiles(logoDir, DESTDIR) {
   try {
     // Read the files in logoDir
     const files = await readdir(logoDir);
-    console.log(files)
+    logger.info(files)
 
     // Loop through each file
     for (const file of files) {
@@ -125,12 +126,12 @@ async function alcorCopyAndRenameFiles(logoDir, DESTDIR) {
       // Copy the file to the destination
       await copyFile(sourcePath, destPath);
 
-      console.log(`File copied and renamed: ${file}`);
+      logger.info(`File copied and renamed: ${file}`);
     }
 
-    console.log('All files copied and renamed successfully.');
+    logger.info('All files copied and renamed successfully.');
   } catch (error) {
-    console.error('Error:', error.message);
+    logger.error({ err: error.message }, 'Error:');
   }
 }
 
@@ -178,7 +179,7 @@ const downloadImage = async(downloadUrl, imageName) => {
     response.data.pipe(fs.createWriteStream(downloadDirectory+'/'+imageName));
     return true;
   } catch (err) {
-  	console.error(`An error occurred while downloading image ${imageName}: HTTP ${err.response.status} ${err.response.statusText}`);
+  	logger.error(`An error occurred while downloading image ${imageName}: HTTP ${err.response.status} ${err.response.statusText}`);
     return false;
   }
 }
@@ -187,7 +188,7 @@ const alcorDownloadTokenImage = async(token) => {
 	const alcorBaseUrl = 'https://raw.githubusercontent.com/avral/alcor-ui/master/assets/tokens/wax/'
 	const fullUrl = alcorBaseUrl + token.ticker.toLowerCase()+'_'+token.contract.toLowerCase()+'.png'
 	const imgDownloaded = await downloadImage(fullUrl, getImageName(token))
-	console.log('alcor '+imgDownloaded+' '+fullUrl)
+	logger.info('alcor '+imgDownloaded+' '+fullUrl)
 	return imgDownloaded
 
 }
@@ -195,14 +196,14 @@ const tacoDownloadTokenImage = async(token) => {
 	const tacoBaseUrl = 'https://assets.tacostudios.io/tokens/'
 	const fullUrl = tacoBaseUrl + token.contract.toLowerCase()+'_'+token.ticker.toUpperCase()+'.png'
 	const imgDownloaded = await downloadImage(fullUrl, getImageName(token))
-	console.log('taco '+imgDownloaded+' '+fullUrl)
+	logger.info('taco '+imgDownloaded+' '+fullUrl)
 	return imgDownloaded
 }
 const defiboxDownloadTokenImage = async(token) => {
   const defiboxBaseUrl = ' https://defiboxwax.s3.ap-northeast-1.amazonaws.com/eos/'
   const fullUrl = defiboxBaseUrl + token.contract.toLowerCase()+'-'+token.ticker.toLowerCase()+'.png'
   const imgDownloaded = await downloadImage(fullUrl, getImageName(token))
-  console.log('defibox '+imgDownloaded+' '+fullUrl)
+  logger.info('defibox '+imgDownloaded+' '+fullUrl)
 	return imgDownloaded
 }
 
@@ -224,7 +225,7 @@ const downloadTokenImage = async(token) => {
 		imgDownloaded = await defiboxDownloadTokenImage(token)
 
 	if(!imgDownloaded)
-		console.log('No image found for '+getImageName(token))
+		logger.info('No image found for '+getImageName(token))
 }
 
 const main = async() => {
@@ -275,7 +276,7 @@ const main = async() => {
 	  // Check if image already exists in download directory
 	  if (!fs.existsSync(downloadDirectory+'/'+getImageName(tokens[i]))) {
 	    // Image doesn't exist, download it
-	    console.log('Downloading '+tokens[i].contract+' '+tokens[i].ticker+' token image...');
+	    logger.info('Downloading '+tokens[i].contract+' '+tokens[i].ticker+' token image...');
 	    await downloadTokenImage(tokens[i])
 	    await delay(1000)
 	  }

@@ -1,4 +1,5 @@
 import { precise } from '@utils/utils.js'
+import logger from '@utils/logger.js';
 
 class Pool {
 	constructor(pairid, src, fee, lptoken, token0, token1, reserve0, reserve1, input_min_units, active = true) {
@@ -92,8 +93,8 @@ class Pool {
     if(pool.src === 'neftyblocks' && pool.fee > 0) {
       // fees are on input token
       /*/ if(pool.pairid === 'USDWAX') {
-        console.log(unit_size)
-        console.log({bid, result: precise(bid * pool.fee / 10000, pool.token0.symbol.precision) * 1 - unit_size})
+        logger.info(unit_size)
+        logger.info({ first: {bid, second: result: precise(bid * pool.fee / 10000, pool.token0.symbol.precision) * 1 - unit_size} })
       }/**/
       // minus unit_size because if fee are the unit_size the swap contracts might compute 0
       if(precise(bid * pool.fee / 10000, pool.token0.symbol.precision) * 1 - unit_size <= 0) {

@@ -1,4 +1,5 @@
 import SubIndexer from './SubIndexer.js'
+import logger from '@utils/logger.js';
 
 export default class AlcorTicksSubIndexer extends SubIndexer {
 	constructor(getRpcIndexer, updateSync) {
@@ -7,7 +8,7 @@ export default class AlcorTicksSubIndexer extends SubIndexer {
 
 	async fetchRows(scopes = ['*']) {
 		const pools = this.getRpcIndexer().poolV3Map.getAllPools()
-		console.log(pools.length + ' pools V3 - ticks scope to track')
+		logger.info(pools.length + ' pools V3 - ticks scope to track')
 		return await this.scopesFetchRows(pools.map(p => p.id))
 	}
 }

@@ -11,6 +11,7 @@ import LogpoolRow from '@models/Rows/Logpool.js'
 import ListingEventRow from '@models/Rows/ListingEvent.js';
 import LimitLogOrderFillRow from '@models/Rows/LimitLogOrderFill.js';
 import LimitLogOrderCloseRow from '@models/Rows/LimitLogOrderClose.js';
+import logger from '@utils/logger.js';
 
 class TraceAction {
 	constructor(block_num, trx_id, act) {
@@ -65,7 +66,7 @@ class HistoryReader {
 	  if(this.syncs.includes(false) || this.errorTriggered)
     	setTimeout(() => {this.errorTriggered = false; this.connect()}, AppConfig.history_loop_delay)
     else {
-    	console.log(this.syncs, this.errorTriggered)
+    	logger.info({ syncs: this.syncs, errorTriggered: this.errorTriggered })
     	this.restartReader()
     }
 	}
@@ -77,7 +78,7 @@ class HistoryReader {
 
     const last_synced_block_num = await this.getLastSyncedBlock(act_interest.table, act_interest.src, (act_interest.filterByActname ? act_interest.actname : '') )
     const last_synced_global_sequence = await this.getLastSyncedGlobalSequence(act_interest.table, act_interest.src, (act_interest.filterByActname ? act_interest.actname : '') )
-    console.log(
+    logger.info(
     	'Source '+act_interest.src+
     	' - Actname '+act_interest.actname+
     	' - last sync utc time: '+makeDateForSmartcontract(getBlockTimestamp(last_synced_block_num))+
@@ -131,7 +132,7 @@ class HistoryReader {
 
 		try {
 			let history = await axios.get(AppConfig.hyperion_endpoint + 'history/get_actions' + extraParam)
-			console.log(AppConfig.hyperion_endpoint + 'history/get_actions' + extraParam)
+			logger.info(AppConfig.hyperion_endpoint + 'history/get_actions' + extraParam)
 			history = history.data
 
 			for(let i = 0; i < history.actions.length; ++i) {
@@ -266,13 +267,13 @@ class HistoryReader {
 			}
 		}
 		catch(e) {
-			console.log('error catch')
+			logger.error('error catch')
 			this.errorTriggered = true
-			console.log(AppConfig.hyperion_endpoint + 'history/get_actions' + extraParam)
+			logger.info(AppConfig.hyperion_endpoint + 'history/get_actions' + extraParam)
 			if(e.code !== undefined)
-				console.log(e.code)
+				logger.info(e.code)
 			else
-				console.log(e)
+				logger.error(e)
 
 			return fetchActions
 		}

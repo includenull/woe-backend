@@ -12,6 +12,7 @@ import {
 import AppConfig from "../../config.js";
 
 import { fetchAbi, getInfo, eosioApi } from "./utils.js";
+import logger from "@utils/logger.js";
 
 function leapNameToUint(name: string): string {
   return Name.from(name).value.toString();
@@ -93,7 +94,7 @@ export default class StreamReaderrows {
   }
 
   async connect() {
-    console.log("STREAM READER ROWS connecting");
+    logger.info("STREAM READER ROWS connecting");
     const { close$, rows$ } = await this.loadReader();
 
     // filter ship socket messages stream by type (string for abi and )
@@ -103,7 +104,7 @@ export default class StreamReaderrows {
     const deletedRows$ = rows$.pipe(filter((row: any) => !row.present));
 
     existingRows$.subscribe((row) => {
-      console.log(
+      logger.info(
         "[" +
           row.block_num +
           "]Received row for " +
@@ -116,7 +117,7 @@ export default class StreamReaderrows {
     });
 
     deletedRows$.subscribe((row) => {
-      console.log(
+      logger.info(
         "[" +
           row.block_num +
           "]Deleted row for " +
@@ -128,6 +129,6 @@ export default class StreamReaderrows {
       this.onProcessedData(row);
     });
 
-    close$.subscribe(() => console.log("connection closed"));
+    close$.subscribe(() => logger.info("connection closed"));
   }
 }

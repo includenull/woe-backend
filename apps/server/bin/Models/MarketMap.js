@@ -9,6 +9,7 @@ import Token from './Token.js'
 
 import AppConfig from '../../config.js'
 import BanlistLoader from '@models/BanlistLoader.js';
+import logger from '@utils/logger.js';
 
 class MarketMapException extends Error {
 	constructor({data, code}) {
@@ -173,7 +174,7 @@ export default class MarketMap {
 			return true
 		}
 		catch(e) {
-			console.log(e)
+			logger.error(e)
 			return false
 		}
 	}
@@ -214,7 +215,7 @@ export default class MarketMap {
 	insertMarketWithRow(row) {
 		const market = MarketMap.createMarketFromRow(row)
 		this.saveMarket(market)
-		console.log('insertMarketWithRow', market)
+		logger.info({ market }, 'insertMarketWithRow')
 	}
 
 	updateMarketWithRow(oldMarket, row) {
@@ -224,12 +225,12 @@ export default class MarketMap {
 		market.lastPrice = oldMarket.lastPrice
 
 		this.saveMarket(market)
-		console.log('updateMarketWithRow', market)
+		logger.info({ market }, 'updateMarketWithRow')
 	}
 
 	deleteMarketWithRow(row) {
 		const market = MarketMap.createMarketFromRow(row)
-		console.log('deleteMarketWithRow', row)
+		logger.info({ row }, 'deleteMarketWithRow')
 		this.removeMarket(market)
 	}
 
@@ -245,10 +246,10 @@ export default class MarketMap {
 		catch(e) {
 			if(e.code !== undefined) {
 				if(e.code === 'missing_market')
-					console.log('Market '+e.data.market_id+' from '+e.data.src+' not indexed yet')
+					logger.info('Market '+e.data.market_id+' from '+e.data.src+' not indexed yet')
 			}
 			else {
-				console.log('Unhandled error', e)
+				logger.error({ err: e }, 'Unhandled error')
 			}
 		}
 	}

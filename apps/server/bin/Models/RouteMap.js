@@ -14,6 +14,7 @@ import AppConfig from '../../config.js'
 
 // Cache same route
 import getRedis from '../Connectors/RedisConnector.js'
+import logger from '@utils/logger.js';
 
 class RouteMap {
 	constructor(getRpcIndexer) {
@@ -238,8 +239,8 @@ class RouteMap {
 			return routes
 		}
 		catch(e) {
-			console.error('ERROR COMPUTING ROUTES');
-			console.error(e)
+			logger.error('ERROR COMPUTING ROUTES');
+			logger.error(e)
 			return []
 		}
 	}

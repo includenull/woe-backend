@@ -19,6 +19,7 @@ import {delay} from './utils/utils.js';
 import { parseCandlesQuery, validateSwapRoutesQuery, swapRouteQueryParams } from './utils/apiValidation.js';
 import { fetchIndexerApi, fetchKlinesIndexerApi, fetchLastStatsApi } from '@class/apiFetcher.js';
 import { getInfo } from '@connectors/RpcConnector.js';
+import logger from '@utils/logger.js';
 
 const resGzipJson = (json, res) => {
 	const jsonData = JSON.stringify(json);
@@ -26,7 +27,7 @@ const resGzipJson = (json, res) => {
   // Compress the JSON data using gzip
   zlib.gzip(jsonData, (err, compressedData) => {
     if (err) {
-      console.error(err);
+      logger.error(err);
       res.status(500).send('Internal Server Error');
       return;
     }
@@ -181,8 +182,8 @@ app.get('/candles', async(req, res, next) => {
 	}
 
 	/*console.log(req.query)
-	console.log('startAt', new Date(1*req.query.startAt))
-	console.log('endAt', new Date(1*req.query.endAt))*/
+	logger.info({ data: new Date(1*req.query.startAt) }, 'startAt')
+	logger.info({ data: new Date(1*req.query.endAt) }, 'endAt')*/
 
 	// Fetch candles
 	let candles = []
@@ -417,5 +418,5 @@ app.post('/socket-session-token', bodyParser.json(), async (req, res) => {
 });
 
 app.listen(8000, () => {
-	console.log('Api listening on port 8000!')
+	logger.info('Api listening on port 8000!')
 });

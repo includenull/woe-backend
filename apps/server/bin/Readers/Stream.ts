@@ -21,6 +21,7 @@ import getRedis from "../Connectors/RedisConnector.js";
 import AppConfig from "../../config.js";
 
 import { fetchAbi, getInfo, eosioApi } from "./utils.js";
+import logger from "@utils/logger.js";
 
 export default class StreamReader {
   actions_interest: any[];
@@ -141,9 +142,9 @@ export default class StreamReader {
   }
 
   async connect() {
-    console.log("STREAM READER connecting");
+    logger.info("STREAM READER connecting");
     const { blocks$, log$, errors$ } = await this.loadReader();
-    console.log("Subscribing to blocks");
+    logger.info("Subscribing to blocks");
     blocks$.subscribe((block: any) => {
       setTimeout(async () => {
         const redis = await getRedis();
@@ -151,7 +152,7 @@ export default class StreamReader {
 
         if (block.block_num >= this.initialStartBlock) {
           if (this.lastProcessedBlock > block.block_num) {
-            console.log(
+            logger.info(
               "FORK DETECTED fell from block " +
                 this.lastProcessedBlock +
                 " to " +
@@ -169,10 +170,10 @@ export default class StreamReader {
 
             redis.publish("READER_FORK_DETECTED", "" + block.block_num);
           }
-          console.log(
+          logger.info(
             "============================================================",
           );
-          console.log(
+          logger.info(
             "block " +
               block.block_num +
               ": " +
@@ -180,8 +181,6 @@ export default class StreamReader {
               " actions",
           );
           //const blockElapsed = block.block_num - this.initialStartBlock
-          //console.log((this.info.last_irreversible_block_num-block.block_num)+' blocks left to fetch init irreversible')
-          //console.log((blockElapsed+this.info.last_irreversible_block_num-block.block_num)+' blocks left to fetch current irreversible')
 
           if (block.actions.length) {
             const dataRows = await this.processBlock(block);
@@ -191,8 +190,8 @@ export default class StreamReader {
       }, 0);
     });
 
-    errors$.subscribe(console.log);
-    log$.subscribe(console.log);
+    errors$.subscribe((err) => logger.error({ err }, "Ship reader error"));
+    log$.subscribe((info) => logger.info(info));
   }
 
   getSourceActionInterest(action: any) {
@@ -228,9 +227,7 @@ export default class StreamReader {
       LimitLogOrderCloseRow.setHeadToHistoryBeforeBlocknum(irr_block_num);
     }
 
-    //console.log(block)
     for (const action of block.actions) {
-      //console.log(action)
       const actionInterest: any = this.getSourceActionInterest(action);
       if (actionInterest.classname === "SwapOrderRow") {
         const parsedAction = SwapOrderRow.parseActionData(

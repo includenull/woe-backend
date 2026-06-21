@@ -1,6 +1,7 @@
 import { getAssetAmount, getAssetCode, getAssetPrecision } from '../../../utils/wharfAssets.js'
 import { parseDateFromSmartcontract } from '../../../utils/utils.js'
 import getDb from '../../Connectors/DbPGConnector.js'
+import logger from '@utils/logger.js';
 
 export default class LiquidityRow {
 	constructor({
@@ -56,8 +57,8 @@ export default class LiquidityRow {
 			ret.extAssetB = actdata.reserve1	
 		}
 		else {
-			console.log('Action not defined into LiquidityRow:parseAction')
-			console.log(src, actname, actdata)
+			logger.info('Action not defined into LiquidityRow:parseAction')
+			logger.info({ src: src, actname: actname, actdata: actdata })
 			process.exit()
 		}
 
@@ -76,8 +77,8 @@ export default class LiquidityRow {
 				'tokenA_price': tokenA_price
 			});
 		} catch (e) {
-			console.log('Liquidity updateTokenAPrice error')
-			console.log(e)
+			logger.error('Liquidity updateTokenAPrice error')
+			logger.error(e)
 		}
 	}
 
@@ -148,7 +149,7 @@ export default class LiquidityRow {
 	    return await query;
 	  } catch (error) {
 	    // Handle any errors
-	    console.error(error);
+	    logger.error(error);
 	    //throw error;
 	  }
 	}
@@ -162,7 +163,7 @@ export default class LiquidityRow {
 			).del()
   	}
   	catch(err) {
-  		console.log('Failed to remove liquidity rows above block', err)
+  		logger.error({ err: err }, 'Failed to remove liquidity rows above block')
   	}
   }
 
@@ -177,7 +178,7 @@ export default class LiquidityRow {
 	  	});
   	}
   	catch(err) {
-  		console.log('failed to set liquidity rows to history', err)
+  		logger.error({ err: err }, 'failed to set liquidity rows to history')
   	}
   }
 
@@ -222,18 +223,18 @@ export default class LiquidityRow {
 		           ++totalUpd
 						}
 						catch(e) {
-							console.log('HistoryReader updateLiquidity error')
-							console.log(e)
+							logger.error('HistoryReader updateLiquidity error')
+							logger.error(e)
 						}
 					}
 		    } else {
-					console.log('HistoryReader saveLiquidity error')
-					console.log(e)
+					logger.error('HistoryReader saveLiquidity error')
+					logger.error(e)
 		    }
 			}
 		}
-    console.log('New liquidity changes saved', totalIns)
-    console.log('Liquidity changes archived', totalUpd)
-    console.log('Already received', liquidityChanges.length-totalIns-totalUpd)
+    logger.info({ totalIns }, 'New liquidity changes saved')
+    logger.info({ totalUpd }, 'Liquidity changes archived')
+    logger.info({ data: liquidityChanges.length-totalIns-totalUpd }, 'Already received')
   }
 }

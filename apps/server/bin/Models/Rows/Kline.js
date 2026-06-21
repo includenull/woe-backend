@@ -5,6 +5,7 @@ import getDb from '../../Connectors/DbPGConnector.js'
 import getRedis from '../../Connectors/RedisConnector.js'
 
 import { isPairReverted } from '../../../utils/utils.js'
+import logger from '@utils/logger.js';
 
 const TIME_UNITS = {
 	'1m': 60 * 1000,
@@ -172,7 +173,7 @@ export class KlineRows {
   		await db('klines_'+src+'_'+pair_id).where('block_num', '>=', block_num).del()
   	}
   	catch(err) {
-  		console.log('Failed to remove candles of '+src+' '+pair_id+' above block '+block_num, err)
+  		logger.error({ err: err }, 'Failed to remove candles of '+src+' '+pair_id+' above block '+block_num)
   	}
   }
 
@@ -289,7 +290,7 @@ export class KlineRows {
 	      ).orderBy(
 	        'updated_at_time', 'asc'
 	      ).limit(10000).catch((err) => {
-	        console.error(err);
+	        logger.error(err);
 	        throw err;
 	      });
 
@@ -332,7 +333,7 @@ export class KlineRows {
 	      ).orderBy(
 	        'updated_at_time', 'asc'
 	      ).limit(10000).catch((err) => {
-	        console.error(err);
+	        logger.error(err);
 	        throw err;
 	      });
 
@@ -375,7 +376,7 @@ export class KlineRows {
 	      ).orderBy(
 	        'updated_at_time', 'asc'
 	      ).limit(10000).catch((err) => {
-	        console.error(err);
+	        logger.error(err);
 	        throw err;
 	      });
 
@@ -435,13 +436,13 @@ export class KlineRows {
 		//const lastHistoryCandleStart = await table.getLastSyncedUpdatedAtTime(this.ut)
 		//const lastHeadCandleStart = await table.getLastSyncedUpdatedAtTime(this.ut, 'head')
 		const db = await getDb()
-		console.log(this.workerId+': Processing candles for '+this.ut+' '+this.exchangeLocation.src+'_'+this.exchangeLocation.id+' '+this.exchangeLocation.token0.symbol.ticker+'/'+this.exchangeLocation.token1.symbol.ticker)
+		logger.info(this.workerId+': Processing candles for '+this.ut+' '+this.exchangeLocation.src+'_'+this.exchangeLocation.id+' '+this.exchangeLocation.token0.symbol.ticker+'/'+this.exchangeLocation.token1.symbol.ticker)
 
 
 		//const syncTimeStart = (lastHeadCandleStart > 0) ? this.getPrevRowStart(lastHeadCandleStart) : lastHistoryCandleStart;
 
 		/**
-		console.log({
+		logger.info({
 			lastHistoryCandleStart,
 			lastHeadCandleStart,
 			'prevHeadCandleStart': ((lastHeadCandleStart > 0) ? this.getPrevRowStart(lastHeadCandleStart) : 0),
@@ -489,7 +490,7 @@ export class KlineRows {
       })
 
 			if(lastCandles.length) {
-				console.log(workerId+': Preload '+lastCandles.length+' candles from database')
+				logger.info(workerId+': Preload '+lastCandles.length+' candles from database')
 				this.preloadRows(lastCandles)
 			}
 
@@ -607,7 +608,7 @@ export class KlineRows {
 	      ).orderBy(
 	        'updated_at_time', 'asc'
 	      ).limit(10000).catch((err) => {
-	        console.error(err);
+	        logger.error(err);
 	        throw err;
 	      });
 
@@ -890,9 +891,9 @@ export class KlineRows {
 	    }
 	    totalIns = dataToInsert.length
 	  } catch (e) {
-	    console.log(this.workerId+': Error inserting klines')
-	    console.log("---------------------------\n\n\n\n\n\n\n\n\n\n\n----------------------------")
-	    console.log(e)
+	    logger.info(this.workerId+': Error inserting klines')
+	    logger.info("---------------------------\n\n\n\n\n\n\n\n\n\n\n----------------------------")
+	    logger.error(e)
 	    //console.log(this.rows[this.tableName][this.ut])
 	  	/**console.log(
 	  		this.rows[this.tableName][this.ut].filter(r => r.exists === false && r.updated === true),
@@ -921,16 +922,16 @@ export class KlineRows {
 					// Publish the weather data to the 'weather' channel
 					await redis.publish('klines_update_socketio', dataString);
 	         /* if(rowsUpdated === 0)
-	         	console.log(row, 'updated 0') */
+	         	logger.info({ first: row, second: 'updated 0' }) */
 
 	        totalUpd += rowsUpdated
 	      }
 	    })
 	  } catch (e) {
-	    console.log(this.workerId+': Error updating klines')
-	    console.log(e)
+	    logger.info(this.workerId+': Error updating klines')
+	    logger.error(e)
 	  }
-    console.log(this.workerId+': Klines inserted', totalIns)
-    console.log(this.workerId+': Klines updated', totalUpd)
+    logger.info({ totalIns }, this.workerId+': Klines inserted')
+    logger.info({ totalUpd }, this.workerId+': Klines updated')
   }
 } // KlineRows

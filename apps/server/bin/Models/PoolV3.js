@@ -12,6 +12,7 @@ import {
   nearestUsableTick,
   TICK_SPACINGS
 } from '@alcorexchange/alcor-swap-sdk'
+import logger from '@utils/logger.js';
 
 export default class PoolV3 {
 	constructor({
@@ -173,7 +174,7 @@ export default class PoolV3 {
       return alcorTrade[0].outputAmount.toFixed()
     }
     catch(e) {
-      console.log(e)
+      logger.error(e)
       return 0
     }
   }

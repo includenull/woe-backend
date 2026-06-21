@@ -12,6 +12,7 @@ import {delay} from '../../utils/utils.js'
 import AppConfig from '../../config.js'
 import { fetchIndexerApi } from '@class/apiFetcher.js';
 import ApiLastStats from '@indexers/Api/LastStats.js'
+import logger from '@utils/logger.js';
 
 function getTimeLimit(nbDay) {
 	const nowTime = Date.now()
@@ -103,7 +104,7 @@ export default class LastStatsIndexer {
 	}
 
 	async start() {
-		console.log('LastStats start')
+		logger.info('LastStats start')
 		await this.init()
 		await this.connectStream()
 
@@ -115,19 +116,19 @@ export default class LastStatsIndexer {
 		const api_status = await fetchIndexerApi('/status')
 
 		if(api_status === [] || api_status?.ready === false) {
-			console.log('Indexer api not ready, wait 30 seconds')
+			logger.info('Indexer api not ready, wait 30 seconds')
 			await delay(30000)
 			return await this.waitForApiToBeReady()
 		}
 		
-		console.log('Indexer api is ready')
+		logger.info('Indexer api is ready')
 		return;
 	}
 
 	async init() {
 		await this.api.start();
 
-		console.log('Check if indexer api is ready')
+		logger.info('Check if indexer api is ready')
 		await this.waitForApiToBeReady()
 
 		this.pools = await fetchIndexerApi('/pools')
@@ -143,7 +144,7 @@ export default class LastStatsIndexer {
 
  	updateApiStatus() {
  		if(this.lastStatsVolumesWorkInitialized && this.lastStatsPriceChangesWorkInitialized) {
-			console.log('Set api status to ready')
+			logger.info('Set api status to ready')
 			this.api.setReady(true)
  		}
  	}
@@ -747,31 +748,31 @@ export default class LastStatsIndexer {
 
  	async doLastStatsVolumesWork(worker_id) {
  		const startTime = Date.now()
- 		console.log(worker_id+': Last stats volumes work starts')
+ 		logger.info(worker_id+': Last stats volumes work starts')
 
  		if(!this.trxInVolumeStats.length) {
  			// init
 	 		const last30dTrades = await this.fetchLastTrades(30)
 
-	 		console.log(worker_id+': Computing last volumes')
+	 		logger.info(worker_id+': Computing last volumes')
 	 		for(const srcType of Object.keys(last30dTrades)) {
 	 			const computedLastVolumes = await this.computeLastVolumes(srcType, last30dTrades[srcType])
 	 		}
 
-	 		console.log(worker_id+': Last stats volumes work done in '+Math.floor((Date.now() - startTime) / 1000)+' seconds')
+	 		logger.info(worker_id+': Last stats volumes work done in '+Math.floor((Date.now() - startTime) / 1000)+' seconds')
 	 		this.lastStatsVolumesWorkInitialized = true
 	 		this.updateApiStatus()
  		}
  		else {
  			// Update trxInVolumeStats and expire old tx + update volume
  			const expiredTrxs = this.expireTradeInVolumeStats()
- 			console.log(worker_id+': '+expiredTrxs.length+' expired trades')
+ 			logger.info(worker_id+': '+expiredTrxs.length+' expired trades')
  			for(const expiredTrx of expiredTrxs)
  				this.removeLastVolumes(expiredTrx)
 
  			// Get new trades (queue or db fetch) and insert them into volume count
  			const newTrxCpt = this.trxQueueToAddInVolumeStats.length
- 			console.log(worker_id+': '+newTrxCpt + ' new trades')
+ 			logger.info(worker_id+': '+newTrxCpt + ' new trades')
  			for(let i = 0; i < newTrxCpt; ++i) {
  				const trade = this.trxQueueToAddInVolumeStats.shift()
  				// Safety to not include trade already processed
@@ -784,11 +785,11 @@ export default class LastStatsIndexer {
 
  	async doLastStatsPriceChangesWork(worker_id) {
  		const startTime = Date.now()
- 		console.log(worker_id+': Last stats price changes work starts')
+ 		logger.info(worker_id+': Last stats price changes work starts')
 
  		if(!this.trxInPriceChangesStats.length) {
 	 		const lastDayTrades = await this.fetchLastTrades(1)
-	 		console.log(worker_id+': Computing last price changes')
+	 		logger.info(worker_id+': Computing last price changes')
 	 		for(const srcType of Object.keys(lastDayTrades)) {
 	 		  await this.computeLastPriceChanges(
 	 		  	srcType,
@@ -796,13 +797,13 @@ export default class LastStatsIndexer {
 	 		  )
 	 		}
 
-	 		console.log(worker_id+': Last stats price changes work done in '+Math.floor((Date.now() - startTime) / 1000)+' seconds')
+	 		logger.info(worker_id+': Last stats price changes work done in '+Math.floor((Date.now() - startTime) / 1000)+' seconds')
 	 		this.lastStatsPriceChangesWorkInitialized = true
 	 		this.updateApiStatus()
  		}
  		else {
  			const expiredTrxs = this.expireTradeInPriceChangesStats()
- 			console.log(worker_id+': '+expiredTrxs.length+' expired trades')
+ 			logger.info(worker_id+': '+expiredTrxs.length+' expired trades')
  			for(const expiredTrx of expiredTrxs) {
 				this.updatePairBeforeDayPrice(expiredTrx.srcType, expiredTrx.src, expiredTrx.pair_id, expiredTrx.price)
 				this.refreshPairPriceChange(expiredTrx.srcType, expiredTrx.src, expiredTrx.pair_id)
@@ -810,7 +811,7 @@ export default class LastStatsIndexer {
 
  			// Get new trades (queue or db fetch) and insert them into volume count
  			const newTrxCpt = this.trxQueueToAddInPriceChangesStats.length
- 			console.log(worker_id+': '+newTrxCpt + ' new trades')
+ 			logger.info(worker_id+': '+newTrxCpt + ' new trades')
  			for(let i = 0; i < newTrxCpt; ++i) {
  				const trade = this.trxQueueToAddInPriceChangesStats.shift()
  				// Safety to not include trade already processed
@@ -836,7 +837,7 @@ export default class LastStatsIndexer {
 				this.trxQueueToAddInVolumeStats.push(trade)
 			})
     } catch(err) {
-    	console.log('Error while listening to queue '+swapOrdersQueueName, err)
+    	logger.error({ err: err }, 'Error while listening to queue '+swapOrdersQueueName)
     }
     try {
 			redis.subscribe(swapVThreeOrdersQueueName, (jsonData) => {
@@ -846,7 +847,7 @@ export default class LastStatsIndexer {
 				this.trxQueueToAddInVolumeStats.push(trade)
 			})
     } catch(err) {
-    	console.log('Error while listening to queue '+swapVThreeOrdersQueueName, err)
+    	logger.error({ err: err }, 'Error while listening to queue '+swapVThreeOrdersQueueName)
     }
     try {
 			redis.subscribe(marketMatchesQueueName, (jsonData) => {
@@ -856,7 +857,7 @@ export default class LastStatsIndexer {
 				this.trxQueueToAddInVolumeStats.push(trade)
 			})
     } catch(err) {
-    	console.log('Error while listening to queue '+marketMatchesQueueName, err)
+    	logger.error({ err: err }, 'Error while listening to queue '+marketMatchesQueueName)
     }
  	}
 }

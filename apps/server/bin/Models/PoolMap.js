@@ -8,6 +8,7 @@ import Pool from '@models/Pool.js'
 
 import AppConfig from '@root/config.js'
 import BanlistLoader from '@models/BanlistLoader.js';
+import logger from '@utils/logger.js';
 
 class PoolMapException extends Error {
 	constructor({data, code}) {
@@ -172,7 +173,7 @@ class PoolMap {
 			return true
 		}
 		catch(e) {
-			console.log(e)
+			logger.error(e)
 			return false
 		}
 	}
@@ -278,7 +279,7 @@ class PoolMap {
 
 	insertPoolWithRow(row) {
 		const pool = PoolMap.createPoolFromRow(row)
-		console.log('insertPoolWithRow savepool', pool)
+		logger.info({ pool }, 'insertPoolWithRow savepool')
 		this.savePool(pool)
 	}
 
@@ -383,17 +384,17 @@ class PoolMap {
 		catch(e) {
 			if(e.code !== undefined) {
 				if(e.code === 'missing_pool')
-					console.log('Pool '+e.data.pair_id+' from '+e.data.src+' not indexed yet')
+					logger.info('Pool '+e.data.pair_id+' from '+e.data.src+' not indexed yet')
 			}
 			else {
-				console.log('Unhandled error', e)
+				logger.error({ err: e }, 'Unhandled error')
 			}
 		}
 	}
 
 	deletePoolWithRow(row) {
 		const pool = PoolMap.createPoolFromRow(row)
-		console.log('deletePoolWithRow removePool', pool)
+		logger.info({ pool }, 'deletePoolWithRow removePool')
 		this.removePool(pool)
 	}
 }

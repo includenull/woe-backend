@@ -2,6 +2,7 @@ import { getAssetAmount, getAssetCode, getAssetPrecision } from '../../../utils/
 import {parseDateFromSmartcontract, littleEndianToDesimal} from '../../../utils/utils.js'
 import getDb from '../../Connectors/DbPGConnector.js'
 import getRedis from '../../Connectors/RedisConnector.js'
+import logger from '@utils/logger.js';
 
 class MarketMatchRow {
 	constructor({
@@ -127,7 +128,7 @@ class MarketMatchRow {
 			).del()
   	}
   	catch(err) {
-  		console.log('Failed to remove rows above block', err)
+  		logger.error({ err: err }, 'Failed to remove rows above block')
   	}
   }
 
@@ -142,7 +143,7 @@ class MarketMatchRow {
 	  	});
   	}
   	catch(err) {
-  		console.log('failed to set rows to history', err)
+  		logger.error({ err: err }, 'failed to set rows to history')
   	}
   }
 
@@ -171,19 +172,19 @@ class MarketMatchRow {
 		           ++totalUpd
 						}
 						catch(e) {
-							console.log('HistoryReader updateMatch error')
-							console.log(e)
+							logger.error('HistoryReader updateMatch error')
+							logger.error(e)
 						}
 					}
 		    } else {
-					console.log('HistoryReader saveMatch error')
-					console.log(e)
+					logger.error('HistoryReader saveMatch error')
+					logger.error(e)
 		    }
 			}
 		}
-    console.log('New matches saved', totalIns)
-    console.log('Matches archived', totalUpd)
-    console.log('Already received', matches.length-totalIns-totalUpd)
+    logger.info({ totalIns }, 'New matches saved')
+    logger.info({ totalUpd }, 'Matches archived')
+    logger.info({ data: matches.length-totalIns-totalUpd }, 'Already received')
     
   }
   static async fetchRows({
@@ -294,7 +295,7 @@ class MarketMatchRow {
 	    return await query;
 	  } catch (error) {
 	    // Handle any errors
-	    console.error(error);
+	    logger.error(error);
 	    //throw error;
 	  }
   }

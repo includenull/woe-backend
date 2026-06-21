@@ -7,6 +7,7 @@ import { KlineRows } from './Models/Rows/Kline.js';
 import getRedis from './Connectors/RedisConnector.js'
 
 import {delay} from '../utils/utils.js';
+import logger from '@utils/logger.js';
 
 const SERVER_PORT = 8010;
 
@@ -80,7 +81,7 @@ export default class SocketioServer {
       });
     } catch (err) {
       // If an error occurs, log it and wait 5 seconds before trying again
-      console.error(`Error consuming messages from queue ${marketQueueName}:`, err);
+      logger.error({ err: err }, `Error consuming messages from queue ${marketQueueName}:`);
     }
   }
 
@@ -145,7 +146,7 @@ export default class SocketioServer {
         await this.rateLimiter.consume(remoteAddress, 5)
       }
       catch(rateLimiterRes) {
-        console.log('remoteAddress '+remoteAddress+' force disconnect RATE_LIMITED')
+        logger.info('remoteAddress '+remoteAddress+' force disconnect RATE_LIMITED')
         await socket.disconnect();
         return;
       }
@@ -191,7 +192,7 @@ export default class SocketioServer {
 
       // Check if the user has reached the maximum allowed connections
       if(this.getUserConnectionCount(userId) >= this.maxConnectionsPerUser) {
-        console.log('user '+userId+' reached max number of connections')
+        logger.info('user '+userId+' reached max number of connections')
         socket.disconnect();
         return;
       }
@@ -251,7 +252,7 @@ export default class SocketioServer {
     });
 
     this.server.listen(SERVER_PORT, async () => {
-      console.log('Socket.io server listening on port '+SERVER_PORT);
+      logger.info('Socket.io server listening on port '+SERVER_PORT);
       this.startPushMarketMatches()
       this.startPushKlines()
       this.startPushOrderbooksDelta()

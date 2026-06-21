@@ -1,4 +1,5 @@
 import SubIndexer from '@indexers/Sub/SubIndexer.js';
+import logger from '@utils/logger.js';
 
 
 export default class BagzregistrySubIndexer extends SubIndexer {
@@ -48,7 +49,7 @@ export default class BagzregistrySubIndexer extends SubIndexer {
     bagzregistry_accounts = JSON.parse(bagzregistry_accounts_text);
   } catch (e) {
     bagzregistry_accounts = null;
-    console.log('failed to load bagzregistry_accounts');
+    logger.info('failed to load bagzregistry_accounts');
   			}
 
 		// bluemobwally is not bagzregistry anymore 

@@ -1,3 +1,4 @@
+import logger from '@utils/logger.js';
 const indexerApi = 'http://indexer:8200';
 const klinesIndexerApi = 'http://klinesindexer:8210'
 const lastStatsApi = 'http://laststatsindexer:8220'
@@ -14,15 +15,15 @@ const fetchApi = async (url, path, attempt = 0) => {
 		}
 	}
 	catch(err) {
-		console.log('Error while fetching api: '+url+path)
+		logger.info('Error while fetching api: '+url+path)
 		if(err?.cause?.code === 'UND_ERR_SOCKET') {
 			++attempt
 			if(attempt < 5) {
-				console.log('SocketError: other side closed retrying... attempt #'+attempt)
+				logger.info('SocketError: other side closed retrying... attempt #'+attempt)
 				return await fetchApi(url, path, attempt)
 			}
 			else
-				console.log('SocketError: other side closed')
+				logger.info('SocketError: other side closed')
 		}
 
 		return undefined
