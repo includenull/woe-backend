@@ -181,10 +181,6 @@ app.get('/candles', async(req, res, next) => {
 		return false;
 	}
 
-	/*console.log(req.query)
-	logger.info({ data: new Date(1*req.query.startAt) }, 'startAt')
-	logger.info({ data: new Date(1*req.query.endAt) }, 'endAt')*/
-
 	// Fetch candles
 	let candles = []
 	try {
@@ -196,7 +192,6 @@ app.get('/candles', async(req, res, next) => {
 			endAt: candleQuery.value.endAt,
 			//limit: req.query.countBack // No limit -> In the unlikely case that the number of bars in the requested range is larger than the countBack value, then you should return all the bars in that range instead of truncating it to the countBack length.
 		})
-		//console.log('initial candles length', candles.length)
 	}
 	catch(e) {
 		res.status(e.code).json({error: e.message})
@@ -322,7 +317,6 @@ app.post('/trades', bodyParser.json(), async (req, res, next) => {
 
   resGzipJson(trades, res);
 });
-
 
 /** 
  * HTTPS get params :

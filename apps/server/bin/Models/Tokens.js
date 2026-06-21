@@ -95,7 +95,6 @@ class Tokens {
 			} // for
 		} // for
 
-		// console.log(this.tokens)
 	}
 
 	async populateTokenImg() {

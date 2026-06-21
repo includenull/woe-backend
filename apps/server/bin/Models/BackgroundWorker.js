@@ -17,7 +17,6 @@ export default class BackgroundWorker {
 
 	async run(id) {
 		while(true && !this.stopped) {
-			//console.log('Run worker '+id)
 			await this.do(id)
 		}
 	}

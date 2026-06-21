@@ -223,7 +223,6 @@ export default class ListingEventRow {
 			'updated_at_time'
 		).from('listingEvents');
 
-
 		if(min_global_sequence !== undefined && null !== min_global_sequence)
    		query = query.where('global_sequence', '>=', min_global_sequence);
    	if(max_global_sequence !== undefined && null !== max_global_sequence)

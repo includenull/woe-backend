@@ -164,7 +164,6 @@ const main = async () => {
 }
 main();
 
-
 /* const getImageName = (token) => {
 	return token.contract.toLowerCase() + '_' + token.ticker.toLowerCase() + '.png'
 }

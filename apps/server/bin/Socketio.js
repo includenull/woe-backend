@@ -157,7 +157,6 @@ export default class SocketioServer {
         }
         catch(rateLimiterRes) {
           await this.rateLimiter.penalty(remoteAddress, 601) // 1 minute
-          //console.log('remoteAddress '+remoteAddress+' RATE_LIMITED')
           return next(new Error('429 - Too Many Requests'));
         }
         return next(new Error('SESSION_TOKEN&&SESSION_UUID:REQUIRED'));
@@ -171,7 +170,6 @@ export default class SocketioServer {
         }
         catch(rateLimiterRes) {
           await this.rateLimiter.penalty(remoteAddress, 601) // 1 minute
-          //console.log('remoteAddress '+remoteAddress+' RATE_LIMITED')
           return next(new Error('429 - Too Many Requests'));
         }
         return next(new Error('SESSION_TOKEN&&SESSION_UUID:INVALID'));
@@ -199,7 +197,6 @@ export default class SocketioServer {
 
       // Increment the user's connection count
       this.incrementUserConnectionCount(userId);
-      // console.log(userId, this.getUserConnectionCount(userId), this.activeConnections)
 
       socket.on('subscribe', ({roomType, params}) => {
         if(roomType === 'marketMatches') {

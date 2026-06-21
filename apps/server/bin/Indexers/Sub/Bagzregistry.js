@@ -1,7 +1,6 @@
 import SubIndexer from '@indexers/Sub/SubIndexer.js';
 import logger from '@utils/logger.js';
 
-
 export default class BagzregistrySubIndexer extends SubIndexer {
 	constructor(getRpcIndexer, updateSync) {
 		super(getRpcIndexer, updateSync)

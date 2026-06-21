@@ -65,7 +65,6 @@ class KlinesTable extends Table {
 		    OWNER to swaplog;
 		`;
 
-
 		return await this.createQuery(query)
 	}
 

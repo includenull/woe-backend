@@ -284,7 +284,7 @@ class KlinesIndexer {
 		}
 
 		logger.info(workerId+': completed!!!')
-		// wait for console.log to print before worker is terminated
+		// wait for logger output before worker is terminated
 		await delay(100)
 
 		return true
@@ -419,7 +419,6 @@ class KlinesIndexer {
 				if(row === null)
 					logger.info('listenUpdatePool: pool '+data.src+':'+data.pair_id+' not existing yet. updated_at_time = 0')
 
-				//console.log('listenUpdatePool: update '+data.src+' '+data.pair_id)
 				await this.klinesSync.update({
 					src: data.src,
 					pair_id: data.pair_id,
@@ -448,7 +447,6 @@ class KlinesIndexer {
 				if(row === null)
 					logger.info('listenUpdatePoolV3: pool '+data.src+':'+data.pair_id+' not existing yet. updated_at_time = 0')
 
-				//console.log('listenUpdatePoolV3: update '+data.src+' '+data.pair_id)
 				await this.klinesSync.update({
 					src: data.src,
 					pair_id: data.pair_id,
@@ -479,7 +477,6 @@ class KlinesIndexer {
 				if(row === null)
 					logger.info('listenUpdateMarket: market '+data.src+':'+data.market_id+' not existing yet. updated_at_time = 0')
 
-				//console.log('listenUpdateMarket: update '+market.src+' '+market.id)
 				await this.klinesSync.update({
 					src: src,
 					pair_id: data.market_id,

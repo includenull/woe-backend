@@ -93,7 +93,6 @@ export default class LogpoolRow {
 		if(codeB !== undefined && null !== codeB)
 			query = query.where({'codeB': codeB})
 
-
 		if(startAt !== undefined && null !== startAt)
    		query = query.where('updated_at_time', '>=', startAt);
 		if(endAt !== undefined && null !== endAt)

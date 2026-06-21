@@ -113,7 +113,6 @@ export default class MarketMap {
 		return await this.saveRefresh(markets)
 	}
 
-
 	getMarket(src, pairid) {
 		if(this.map[src+'_'+pairid] !== undefined)
 			return this.map[src+'_'+pairid]
@@ -124,7 +123,6 @@ export default class MarketMap {
 	getAllMarkets() {
 		let markets = []
 
-		//console.log(this.map)
 		const allMarketsHashes = Object.keys(this.map)
 
 		for(let i = 0; i < allMarketsHashes.length; ++i)
@@ -241,7 +239,6 @@ export default class MarketMap {
 		marketUpdate.lastPrice = data.unit_price
 		try {
 			this.updateMarket(splittedSrc[0]+'market', data.market_id, marketUpdate)
-			//console.log('Market '+splittedSrc[0]+'market_'+data.market_id+' updated')
 		}
 		catch(e) {
 			if(e.code !== undefined) {

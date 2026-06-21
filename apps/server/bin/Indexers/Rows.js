@@ -82,11 +82,9 @@ export default class RowsIndexer {
 		const rowIndex = this.findRowIndex(row)
 		
 		if(rowIndex === -1) {
-			//console.log(row.code+' '+row.table+' '+row.scope, 'addRow')
 			this.rows[row.code][row.table][row.scope].push(row.value)
 		}
 		else {
-			//console.log(row.code+' '+row.table+' '+row.scope, 'editRow')
 			this.rows[row.code][row.table][row.scope][rowIndex] = row.value
 		}
 
@@ -105,7 +103,6 @@ export default class RowsIndexer {
 		}
 		else {
 			this.rows[row.code][row.table][row.scope].splice(rowIndex, 1)
-			//console.log(row.code+' '+row.table+' '+row.scope, 'deleteRow')
 		}
 
 		// Debug rmx wax market on alcor market
@@ -148,9 +145,6 @@ export default class RowsIndexer {
 
 	getRowsForMappedField(field, code_filter, table_filter) {
 		const ret = {}
-
-		//console.log(field)
-		//console.dir(this.rows_map[field], { depth: null })
 
 		if(this.rows_map[field] === undefined)
 			return;
@@ -225,14 +219,10 @@ export default class RowsIndexer {
 		if([undefined, null].includes(field))
 			return false;
 
-		//console.log('Mapping field '+field+' for '+code+':'+table+':'+scope)
-
 		// Reset previous mapping
 		let updatedRowsMap = { ...this.rows_map }; // Create a copy to modify
 		if(this.rows_map_map[code+'_'+table+'_'+scope] !== undefined) {
 			for(const mapped_value of this.rows_map_map[code+'_'+table+'_'+scope]) {
-				//console.log(mapped_value)
-				//console.dir(this.rows_map[mapped_value], { depth: null })
 				try {
 					delete updatedRowsMap[mapped_value][code][table][scope];
 				}
@@ -319,7 +309,6 @@ export default class RowsIndexer {
 	}
 
 	async initCodeTableScope(code, table, scope) {
-		//console.log(code+' '+table+' '+scope, 'initCodeTableScope')
 		this.rows[code][table][scope] = null
 		this.rows[code][table][scope] = await this.subIndexer.fetchCodeTableScope(code, table, scope)
 

@@ -161,10 +161,7 @@ export default class PoolV3 {
         feeGrowthGlobalBX64: pool.feeGrowthGlobalBX64,
         ticks: pool_ticks
       });
-      // console.log(alcorPool)
-      //console.log(bid, parseFloat(parseFloat( ((1*bid).toFixed(tokenIn.decimals)*Math.pow(10, tokenIn.decimals)).toFixed(tokenIn.decimals) ).toFixed(0)) )
       const amountIn = AlcorCurrencyAmount.fromRawAmount(tokenIn, parseFloat(parseFloat( ((1*bid).toFixed(tokenIn.decimals)*Math.pow(10, tokenIn.decimals)).toFixed(tokenIn.decimals) ).toFixed(0))  )
-      //console.log(amountIn)
 
       const alcorTrade = await AlcorTrade.bestTradeExactIn([alcorPool], amountIn, tokenOut, { maxHops: 1 });
 

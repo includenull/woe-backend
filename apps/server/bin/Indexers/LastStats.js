@@ -156,7 +156,6 @@ export default class LastStatsIndexer {
  			if(!['', undefined].includes(market))
  				this.markets.push(market)
  			else {
- 				//console.log('Market with id '+id+' not found')
  				return null
  			}
  		}
@@ -171,7 +170,6 @@ export default class LastStatsIndexer {
  			if(!['', undefined].includes(pool))
  				this.pools.push(pool)
  			else {
- 				//console.log('Pool with id '+id+' and src '+src+' not found')
  				return null
  			}
  		}
@@ -187,7 +185,6 @@ export default class LastStatsIndexer {
  			if(!['', undefined].includes(poolV3))
  				this.poolsV3.push(poolV3)
  			else {
- 				//console.log('Pool V3 with id '+id+' and src '+src+' not found')
  				return null
  			}
  		}
@@ -526,7 +523,6 @@ export default class LastStatsIndexer {
 			trade.pair_id = trade.market_id
 
 			if(market === null) {
-				//console.log('Market '+trade.market_id+' not found')
 				return;
 			}
 
@@ -596,7 +592,6 @@ export default class LastStatsIndexer {
 			const pool = await this.getPool(trade.src, trade.pair_id)
 
 			if(pool === null) {
-				//console.log('Pool with id '+trade.pair_id+' and src '+trade.src+' not found')
 				return;
 			}
 
@@ -671,7 +666,6 @@ export default class LastStatsIndexer {
 			const pool = await this.getPoolV3(trade.src, trade.pair_id)
 
 			if(pool === null) {
-				//console.log('Pool V3 with id '+trade.pair_id+' and src '+trade.src+' not found')
 				return;
 			}
 

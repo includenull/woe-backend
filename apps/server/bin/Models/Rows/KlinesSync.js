@@ -67,7 +67,6 @@ export class KlinesSyncRows {
 	async update({src, pair_id, updated_at_time, last_trade_time, last_trade_block}, force_update = false) {
 		const db = await getDb()
 		const rowIndex = this.findRowIndex(src, pair_id)
-		//console.log({src, pair_id, updated_at_time, last_trade_time}, rowIndex)
 
 		if(rowIndex !== -1) {
 			const row = this.rows[rowIndex]

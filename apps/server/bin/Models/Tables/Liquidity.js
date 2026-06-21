@@ -37,7 +37,6 @@ export default class LiquidityTable extends Table {
 				    OWNER to swaplog;
 		`;
 
-
 		return await this.createQuery(query)
 	}
 }

@@ -17,7 +17,6 @@ export default class PoolV3Map {
 	async init() {
 		const pools = await AlcorPoolV3.fetchPools()
 		this.savePools(pools)
-		// console.log(this.map)
 
 		return true
 	}
@@ -170,7 +169,6 @@ export default class PoolV3Map {
 	updatePoolWithRow(row) {
 		const pool = PoolV3Map.createPoolFromRow(row)
 		this.updatePool(pool)
-		//console.log('updatePoolWithRow', pool)
 	}
 
 	deletePoolWithRow(row) {

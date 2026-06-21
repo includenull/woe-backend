@@ -55,7 +55,6 @@ export default class SubIndexer {
 					setTimeout(async () => {
 						const scope = scopes[i];
 						ret[ti.code][ti.table][scope] = {}
-						// console.log(i+1 + ' / ' + scopes.length + ' fetching scope '+scope+' table '+ti.table)
 						ret[ti.code][ti.table][scope].rows = await this.fetchCodeTableScope(ti.code, ti.table, scope)
 						if((i + 1) % 50 === 0 || i + 1 === scopes.length)
 							logger.info((i + 1)+' / '+scopes.length+' fetched '+ti.code+' '+ti.table)
@@ -70,7 +69,6 @@ export default class SubIndexer {
 
 			  if (result.status === 'fulfilled') {
 			    // Task was fulfilled, you can access the result using result.value
-			    // console.log(`Task ${i + 1} was fulfilled:`, result.value);
 			  } else {
 			    // Task was rejected, you can access the reason using result.reason
 			    logger.error({ err: result.reason }, `Task ${i + 1} was rejected:`);

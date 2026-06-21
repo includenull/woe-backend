@@ -438,18 +438,7 @@ export class KlineRows {
 		const db = await getDb()
 		logger.info(this.workerId+': Processing candles for '+this.ut+' '+this.exchangeLocation.src+'_'+this.exchangeLocation.id+' '+this.exchangeLocation.token0.symbol.ticker+'/'+this.exchangeLocation.token1.symbol.ticker)
 
-
 		//const syncTimeStart = (lastHeadCandleStart > 0) ? this.getPrevRowStart(lastHeadCandleStart) : lastHistoryCandleStart;
-
-		/**
-		logger.info({
-			lastHistoryCandleStart,
-			lastHeadCandleStart,
-			'prevHeadCandleStart': ((lastHeadCandleStart > 0) ? this.getPrevRowStart(lastHeadCandleStart) : 0),
-			'getRowStart': this.getRowStart(Date.now()),
-			'getPrevRowStart': this.getPrevRowStart(this.getRowStart(Date.now()))
-		});
-		/**/
 
 		//process.exit()
 
@@ -528,7 +517,6 @@ export class KlineRows {
 				);
 				for(const swap of swapRows) {
 					swap.tick = Number(swap.tick)
-					//console.log(tokenA, tokenB, this.exchangeLocation, swap, )
 			    const alcorPool = new AlcorPool({
 			      id: this.exchangeLocation.id,
 			      tokenA,
@@ -551,8 +539,6 @@ export class KlineRows {
 			    swap.volumeA = volume.volumeA
 			    swap.volumeB = volume.volumeB
 			    swap.accounts = [swap.sender]
-			    //console.log(swap)
-			    //console.log(price, ((swap.codeB.toLowerCase() === 'wax') ? swap.codeA+'/'+swap.codeB : swap.codeB+'/'+swap.codeA))
 					this.addTrade(swap)
 				}
 			}
@@ -676,8 +662,6 @@ export class KlineRows {
   	const lowerUT = candleConvertMap[this.ut]
   	const lowerCandles = await this.syncFetchCandles(lowerUT, syncFetchStart)
 
-  	//console.log('lastHistoryCandleStart', lastHistoryCandleStart, 'lastHeadCandleStart', lastHeadCandleStart)
-  	//console.log(lowerCandles.map(lc => {lc.transaction_ids = []; return lc}), 'lowerCandles')
   	let rows = {}
 
   	for(const lowerCandle of lowerCandles) {
@@ -689,7 +673,6 @@ export class KlineRows {
   		).sort((a, b) => b.updated_at_time - a.updated_at_time)
  			prevRow = (prevRow.length) ? prevRow[0] : undefined
 
-  		//console.log(start, end)
   		if(rows[start] === undefined) {
   			rows[start] = new KlineRow({
 					src: this.exchangeLocation.src,
@@ -788,7 +771,6 @@ export class KlineRows {
 
   // Feed last candles with new trade
   addTrade(trade) {
-   	//console.log(trade)
     const start = this.getRowStart(trade.updated_at_time);
     const candleIndex = this.rows[this.tableName][this.ut].findIndex(
     	c => c.updated_at_time == start
@@ -878,7 +860,6 @@ export class KlineRows {
 	  let totalIns = 0
 	  try {
 	    await db.batchInsert(this.tableName, dataToInsert)
-	    // console.log(dataToInsert, 'dataToInsert')
 	    for (const row of dataToInsert) {
 	    	const dataString = JSON.stringify({
 					srcType: this.srcType,
@@ -894,16 +875,11 @@ export class KlineRows {
 	    logger.info(this.workerId+': Error inserting klines')
 	    logger.info("---------------------------\n\n\n\n\n\n\n\n\n\n\n----------------------------")
 	    logger.error(e)
-	    //console.log(this.rows[this.tableName][this.ut])
-	  	/**console.log(
-	  		this.rows[this.tableName][this.ut].filter(r => r.exists === false && r.updated === true),
-	  		this.rows[this.tableName][this.ut].filter(r => r.exists === true && r.updated === true)
-	  	)**/
+	  	
 	  }
 		let totalUpd = 0
 	  try {
 	    await db.transaction(async trx => {
-	    	// console.log(dataToUpdate, 'dataToUpdate')
 	      for (const row of dataToUpdate) {
 	        const rowsUpdated = await trx(this.tableName)
 	          .where({
