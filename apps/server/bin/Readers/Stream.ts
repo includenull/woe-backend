@@ -217,6 +217,10 @@ export default class StreamReader {
 
     for (const action of block.actions) {
       const actionInterest: any = this.getSourceActionInterest(action);
+      if (!actionInterest) {
+        continue;
+      }
+
       if (actionInterest.classname === "SwapOrderRow") {
         const parsedAction = SwapOrderRow.parseActionData(
           actionInterest.src,

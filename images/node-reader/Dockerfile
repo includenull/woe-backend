@@ -7,6 +7,7 @@ COPY apps/server/package.json apps/server/package.json
 COPY apps/web/package.json apps/web/package.json
 COPY packages/api-contracts/package.json packages/api-contracts/package.json
 COPY packages/ship/package.json packages/ship/package.json
+COPY packages/ship/src packages/ship/src
 
 RUN pnpm install --frozen-lockfile --store-dir /pnpm/store
 

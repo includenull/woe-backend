@@ -80,4 +80,27 @@ describe("StreamReader", () => {
       }),
     ).toBeNull();
   });
+
+  it("skips unmatched actions while processing a block", async () => {
+    const reader = createReader([
+      {
+        account: "swap.test",
+        actname: "swap",
+      },
+    ]) as any;
+    reader.info = { last_irreversible_block_num: 100 };
+
+    await expect(
+      reader.processBlock({
+        block_num: 10,
+        timestamp: "2024-01-02T03:04:05.000",
+        actions: [
+          {
+            account: "other.test",
+            name: "swap",
+          },
+        ],
+      }),
+    ).resolves.toEqual([]);
+  });
 });

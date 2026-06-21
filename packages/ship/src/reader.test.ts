@@ -91,6 +91,29 @@ describe("StateHistoryBlockReader", () => {
     expect(reader.flushAcksIfNeeded).not.toHaveBeenCalled();
   });
 
+  it("continues processing later blocks after a queued block fails", async () => {
+    const reader = createReader() as any;
+    const consumer = vi.fn();
+    const failedBlock = new Error("bad block");
+    reader.buildBlockResponse = vi
+      .fn()
+      .mockRejectedValueOnce(failedBlock)
+      .mockResolvedValueOnce(minimalBlockResponse());
+    reader.flushAcksIfNeeded = vi.fn();
+    reader.consume(consumer);
+
+    await expect(
+      reader.enqueueBlockResult("get_blocks_result_v0", {}),
+    ).rejects.toThrow("bad block");
+    await expect(
+      reader.enqueueBlockResult("get_blocks_result_v0", {}),
+    ).resolves.toBeUndefined();
+
+    expect(reader.buildBlockResponse).toHaveBeenCalledTimes(2);
+    expect(consumer).toHaveBeenCalledTimes(1);
+    expect(reader.ackPending).toBe(1);
+  });
+
   it("waits for in-flight processing before reconnect cleanup", async () => {
     const reader = createReader() as any;
     let signalProcessingStarted: (() => void) | undefined;

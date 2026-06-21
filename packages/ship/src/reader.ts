@@ -257,33 +257,39 @@ export default class StateHistoryBlockReader {
     response: GetBlocksResultV0,
   ): Promise<void> {
     this.processingBacklog += 1;
-    this.processingChain = this.processingChain.then(async () => {
-      this.recordShipMessageActivity();
+    const blockWork = this.processingChain
+      .catch((error) => {
+        this.logger.error("Previous SHIP block processing failed", { error });
+      })
+      .then(async () => {
+        this.recordShipMessageActivity();
 
-      try {
-        const blockResponse = await this.buildBlockResponse(type, response);
+        try {
+          const blockResponse = await this.buildBlockResponse(type, response);
 
-        if (!blockResponse) {
+          if (!blockResponse) {
+            this.ackPending += 1;
+            this.flushAcksIfNeeded();
+            return;
+          }
+
+          if (this.consumer) {
+            await this.consumer(blockResponse);
+          }
+
+          this.currentArgs.start_block_num =
+            blockResponse.this_block.block_num + 1;
           this.ackPending += 1;
           this.flushAcksIfNeeded();
-          return;
+        } finally {
+          this.processingBacklog -= 1;
+          this.recordShipMessageActivity();
         }
+      });
 
-        if (this.consumer) {
-          await this.consumer(blockResponse);
-        }
+    this.processingChain = blockWork.catch(() => {});
 
-        this.currentArgs.start_block_num =
-          blockResponse.this_block.block_num + 1;
-        this.ackPending += 1;
-        this.flushAcksIfNeeded();
-      } finally {
-        this.processingBacklog -= 1;
-        this.recordShipMessageActivity();
-      }
-    });
-
-    await this.processingChain;
+    await blockWork;
   }
 
   private async onClose(): Promise<void> {
