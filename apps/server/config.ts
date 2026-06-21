@@ -1,11 +1,13 @@
 import * as dotenv from "dotenv";
 dotenv.config();
 
-const isBlank = (value) => value === undefined || value === null || (typeof value === "string" && value.trim() === "");
+const isBlank = (value) =>
+  value === undefined ||
+  value === null ||
+  (typeof value === "string" && value.trim() === "");
 
 export const parseOptionalStartBlock = (value) => {
-  if(value === undefined)
-    return undefined;
+  if (value === undefined || value === "") return undefined;
 
   const parsed = Number(value);
   return isNaN(parsed) ? undefined : parsed;
@@ -14,25 +16,28 @@ export const parseOptionalStartBlock = (value) => {
 export const getMissingRequiredConfig = (config) => {
   const missing = [];
 
-  if(!Array.isArray(config.rpc_endpoints) || !config.rpc_endpoints.some((endpoint) => !isBlank(endpoint)))
+  if (
+    !Array.isArray(config.rpc_endpoints) ||
+    !config.rpc_endpoints.some((endpoint) => !isBlank(endpoint))
+  )
     missing.push("rpc_endpoints (set WAXRPC_ENDPOINT)");
 
-  if(isBlank(config.waxnode_endpoint))
+  if (isBlank(config.waxnode_endpoint))
     missing.push("waxnode_endpoint (set WAXNODE_ENDPOINT)");
 
-  if(isBlank(config.hyperion_endpoint))
+  if (isBlank(config.hyperion_endpoint))
     missing.push("hyperion_endpoint (set HYPERION_ENDPOINT)");
 
   const postgresConnection = config.knexConfig?.connection ?? {};
-  if(isBlank(postgresConnection.host))
+  if (isBlank(postgresConnection.host))
     missing.push("knexConfig.connection.host (set POSTGRESQL_HOST)");
-  if(isBlank(postgresConnection.port))
+  if (isBlank(postgresConnection.port))
     missing.push("knexConfig.connection.port (set POSTGRESQL_PORT)");
-  if(isBlank(postgresConnection.user))
+  if (isBlank(postgresConnection.user))
     missing.push("knexConfig.connection.user (set POSTGRESQL_USER)");
-  if(isBlank(postgresConnection.password))
+  if (isBlank(postgresConnection.password))
     missing.push("knexConfig.connection.password (set POSTGRESQL_PASSWORD)");
-  if(isBlank(postgresConnection.database))
+  if (isBlank(postgresConnection.database))
     missing.push("knexConfig.connection.database (set POSTGRESQL_DATABASE)");
 
   return missing;
@@ -41,8 +46,10 @@ export const getMissingRequiredConfig = (config) => {
 export const validateRequiredConfig = (config) => {
   const missing = getMissingRequiredConfig(config);
 
-  if(missing.length > 0)
-    throw new Error(`Missing required server configuration: ${missing.join(", ")}`);
+  if (missing.length > 0)
+    throw new Error(
+      `Missing required server configuration: ${missing.join(", ")}`,
+    );
 };
 
 const AppConfig = {
@@ -121,8 +128,7 @@ const AppConfig = {
     "bobocoin.gm",
     "hype.gm",
   ],
-  start_block:
-    parseOptionalStartBlock(process.env.START_BLOCK), // don't index under this block, override firstblock
+  start_block: parseOptionalStartBlock(process.env.START_BLOCK), // don't index under this block, override firstblock
   // List of table to listen delta to keep state into memory
   tables_interest: [
     // tables_interest without rowsSubIndexer are not indexed in memory but detla qstream is still read by readerrows

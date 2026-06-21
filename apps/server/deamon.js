@@ -92,4 +92,7 @@ for(let i = 0; i < rawArgv.length; ++i) {
   argv[arg[0]] = arg[1]
 }
 
-main(argv)
+main(argv).catch((err) => {
+  console.error(err.message);
+  process.exit(1);
+});
