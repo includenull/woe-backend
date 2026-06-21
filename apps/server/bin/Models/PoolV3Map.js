@@ -16,9 +16,7 @@ export default class PoolV3Map {
 
 	async init() {
 		const pools = await AlcorPoolV3.fetchPools()
-		await this.savePools(pools)
-
-		return true
+		return await this.savePools(pools)
 	}
 
   getWaxPools(contract, ticker) {
