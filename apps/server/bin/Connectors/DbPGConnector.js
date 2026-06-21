@@ -1,4 +1,5 @@
 import Knex from 'knex'
+import 'pg'
 
 import AppConfig from '../../config.js'
 

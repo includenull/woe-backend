@@ -10,16 +10,16 @@ It connects to a WAX state history node to index on-chain activity in real time,
 
 The backend is structured as a set of microservices, each responsible for a distinct concern:
 
-| Service | Description |
-|---|---|
-| `reader` | Indexes blockchain swap/liquidity actions (logswap, logmint, etc.) |
-| `readerrows` | Tracks smart contract table state changes (pools, pairs, ticks…) |
-| `indexer` | Aggregates pool and market data, exposes internal API on `:8200` |
-| `liquiditypricesindexer` | Tracks pool liquidity and price movements |
-| `laststatsindexer` | Computes recent trading statistics and volume analytics |
-| `klinesindexer` | Generates OHLCV candlestick data with a worker pool for backfill |
-| `api` | Main public REST API on `:8000` |
-| `socketio` | Real-time WebSocket server on `:8010` via Socket.IO |
+| Service                  | Description                                                        |
+| ------------------------ | ------------------------------------------------------------------ |
+| `reader`                 | Indexes blockchain swap/liquidity actions (logswap, logmint, etc.) |
+| `readerrows`             | Tracks smart contract table state changes (pools, pairs, ticks…)   |
+| `indexer`                | Aggregates pool and market data, exposes internal API on `:8200`   |
+| `liquiditypricesindexer` | Tracks pool liquidity and price movements                          |
+| `laststatsindexer`       | Computes recent trading statistics and volume analytics            |
+| `klinesindexer`          | Generates OHLCV candlestick data with a worker pool for backfill   |
+| `api`                    | Main public REST API on `:8000`                                    |
+| `socketio`               | Real-time WebSocket server on `:8010` via Socket.IO                |
 
 ---
 
@@ -41,8 +41,8 @@ The backend is structured as a set of microservices, each responsible for a dist
 - **Runtime:** Node.js 18.16.1
 - **Framework:** Express.js
 - **Real-time:** Socket.IO
-- **Blockchain:** EOS.js, Wharfkit, Alcor Swap SDK, WAX state history stream
-- **Databases:** PostgreSQL (Knex / Objection ORM), MongoDB, Redis
+- **Blockchain:** WharfKit, Alcor Swap SDK, WAX state history stream
+- **Databases:** PostgreSQL (Knex), MongoDB, Redis
 
 ---
 
@@ -62,19 +62,19 @@ Copy `.env.example` to `.env` and fill in the values:
 cp .env.example .env
 ```
 
-| Variable | Description |
-|---|---|
-| `WAXRPC_ENDPOINT` | WAX RPC HTTP endpoint |
-| `WAXNODE_ENDPOINT` | WAX node host (state history) |
-| `WAXNODE_HTTP_PORT` | WAX node HTTP port (default: `8888`) |
-| `WAXNODE_WS_PORT` | WAX node WebSocket port (default: `8080`) |
-| `HYPERION_ENDPOINT` | Hyperion v2 API base URL |
-| `POSTGRESQL_HOST` | PostgreSQL host |
-| `POSTGRESQL_PORT` | PostgreSQL port (default: `5432`) |
-| `POSTGRESQL_DATABASE` | Database name |
-| `POSTGRESQL_USER` | Database user |
-| `POSTGRESQL_PASSWORD` | Database password |
-| `POSTGRESQL_MAX_POOL` | Max PG connection pool size (default: `50`) |
+| Variable                       | Description                                                 |
+| ------------------------------ | ----------------------------------------------------------- |
+| `WAXRPC_ENDPOINT`              | WAX RPC HTTP endpoint                                       |
+| `WAXNODE_ENDPOINT`             | WAX node host (state history)                               |
+| `WAXNODE_HTTP_PORT`            | WAX node HTTP port (default: `8888`)                        |
+| `WAXNODE_WS_PORT`              | WAX node WebSocket port (default: `8080`)                   |
+| `HYPERION_ENDPOINT`            | Hyperion v2 API base URL                                    |
+| `POSTGRESQL_HOST`              | PostgreSQL host                                             |
+| `POSTGRESQL_PORT`              | PostgreSQL port (default: `5432`)                           |
+| `POSTGRESQL_DATABASE`          | Database name                                               |
+| `POSTGRESQL_USER`              | Database user                                               |
+| `POSTGRESQL_PASSWORD`          | Database password                                           |
+| `POSTGRESQL_MAX_POOL`          | Max PG connection pool size (default: `50`)                 |
 | `KLINESINDEXER_WORKER_CATCHUP` | Number of worker threads for klines backfill (default: `3`) |
 
 ### Start block
@@ -105,11 +105,11 @@ docker compose up -d
 
 The dev compose file adds the following services on top of the base stack:
 
-| Service | Port | Description |
-|---|---|---|
-| PostgreSQL | `5432` | Local database instance (user/pass/db: `swaplog`) |
-| pgAdmin | `8081` | Web UI to browse and query the PostgreSQL database |
-| RedisInsight | `8082` | Web UI to inspect and monitor the Redis instance |
+| Service      | Port   | Description                                        |
+| ------------ | ------ | -------------------------------------------------- |
+| PostgreSQL   | `5432` | Local database instance (user/pass/db: `swaplog`)  |
+| pgAdmin      | `8081` | Web UI to browse and query the PostgreSQL database |
+| RedisInsight | `8082` | Web UI to inspect and monitor the Redis instance   |
 
 Start the database first:
 
@@ -133,14 +133,14 @@ docker compose -f docker-compose.dev.yml up -d
 
 Services are exposed on the host:
 
-| Port | Service |
-|---|---|
-| `8000` | REST API |
-| `8010` | Socket.IO WebSocket |
+| Port   | Service              |
+| ------ | -------------------- |
+| `8000` | REST API             |
+| `8010` | Socket.IO WebSocket  |
 | `8200` | Internal indexer API |
-| `8210` | Klines indexer |
-| `8220` | Last stats indexer |
-| `6379` | Redis |
+| `8210` | Klines indexer       |
+| `8220` | Last stats indexer   |
+| `6379` | Redis                |
 
 ---
 
@@ -197,16 +197,16 @@ WAX State History Node
 
 ## DEX Integrations
 
-| DEX | Contract | Type |
-|---|---|---|
-| Alcor Exchange | `alcordexmain` | Order book markets |
-| Alcor Swap | `swap.alcor` | AMM pools |
-| Defibox | `swap.box` | AMM pools |
-| Taco | `swap.taco` | AMM pools |
-| Neftyblocks | `swap.nefty` | AMM pools |
-| A-DEX | `swap.adex` | AMM pools |
-| WAX Fusion | `dapp.fusion` | Liquid staking derivative (LSD) |
-| Waxonedge | `swap.we` | On-chain swap router — receives tokens, executes a multi-hop route encoded in the memo, and enforces a minimum amount out before releasing funds (cancels the transaction if slippage tolerance is exceeded) |
+| DEX            | Contract       | Type                                                                                                                                                                                                         |
+| -------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Alcor Exchange | `alcordexmain` | Order book markets                                                                                                                                                                                           |
+| Alcor Swap     | `swap.alcor`   | AMM pools                                                                                                                                                                                                    |
+| Defibox        | `swap.box`     | AMM pools                                                                                                                                                                                                    |
+| Taco           | `swap.taco`    | AMM pools                                                                                                                                                                                                    |
+| Neftyblocks    | `swap.nefty`   | AMM pools                                                                                                                                                                                                    |
+| A-DEX          | `swap.adex`    | AMM pools                                                                                                                                                                                                    |
+| WAX Fusion     | `dapp.fusion`  | Liquid staking derivative (LSD)                                                                                                                                                                              |
+| Waxonedge      | `swap.we`      | On-chain swap router — receives tokens, executes a multi-hop route encoded in the memo, and enforces a minimum amount out before releasing funds (cancels the transaction if slippage tolerance is exceeded) |
 
 ---
 
