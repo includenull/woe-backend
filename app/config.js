@@ -75,7 +75,7 @@ export default {
 		'bobocoin.gm',
 		'hype.gm'
 	],
-	start_block: 432580669,//106903731, // don't index under this block, override firstblock
+	start_block: 441026000,//106903731, // don't index under this block, override firstblock
 	// List of table to listen delta to keep state into memory
 	tables_interest: [
 	// tables_interest without rowsSubIndexer are not indexed in memory but detla qstream is still read by readerrows
