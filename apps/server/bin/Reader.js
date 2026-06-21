@@ -85,8 +85,10 @@ class Reader {
 	}
 
 	async getLastSyncedBlock(table, src, actname = '') {
-		if(this.lastSyncedBlocks[table+src+actname] !== undefined)
-			return this.lastSyncedBlocks[table+src+actname]
+		const cacheKey = table + src + actname
+
+		if(this.lastSyncedBlocks[cacheKey] !== undefined)
+			return this.lastSyncedBlocks[cacheKey]
 
 		const whereObj = {
 			'src': src,
@@ -104,9 +106,9 @@ class Reader {
 			).where(whereObj).orderBy(
 				'created_at_block', 'desc'
 			).limit(1);
-		this.lastSyncedBlocks[table+src] = (results.length) ? Number(results[0].created_at_block) : 0
+		this.lastSyncedBlocks[cacheKey] = (results.length) ? Number(results[0].created_at_block) : 0
 		
-		return this.lastSyncedBlocks[table+src]
+		return this.lastSyncedBlocks[cacheKey]
 	}
 
 	async getLastSyncedGlobalSequence(table, src, actname) {

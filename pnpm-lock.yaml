@@ -50,9 +50,6 @@ importers:
       dotenv:
         specifier: 16.6.1
         version: 16.6.1
-      eos-common:
-        specifier: 0.12.0
-        version: 0.12.0
       eosjs:
         specifier: 22.1.0
         version: 22.1.0

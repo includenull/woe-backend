@@ -1,10 +1,6 @@
-import { asset, symbol, extended_asset, name, extended_symbol } from "eos-common"
+import { getAssetAmount, getAssetCode, getAssetPrecision } from '../../../utils/wharfAssets.js'
 import { parseDateFromSmartcontract } from '../../../utils/utils.js'
 import getDb from '../../Connectors/DbPGConnector.js'
-
-const getAmountFromAsset = (asset) => asset.amount/Math.pow(10, asset.symbol.precision())
-const getCodeFromAsset = (asset) => asset.symbol.code().toString()
-const getPrecisionFromAsset = (asset) => asset.symbol.precision()
 
 export default class LiquidityRow {
 	constructor({
@@ -29,12 +25,12 @@ export default class LiquidityRow {
 		this.global_sequence = global_sequence
 		this.updated_at_time = parseDateFromSmartcontract(trx_time).getTime()
 		this.pair_id = pair_id
-		this.amount_reserveA = getAmountFromAsset(asset(extAssetA))
-		this.amount_reserveB = getAmountFromAsset(asset(extAssetB))
-		this.code_reserveA = getCodeFromAsset(asset(extAssetA))
-		this.code_reserveB = getCodeFromAsset(asset(extAssetB))
-		this.precision_reserveA = getPrecisionFromAsset(asset(extAssetA))
-		this.precision_reserveB = getPrecisionFromAsset(asset(extAssetB))
+		this.amount_reserveA = getAssetAmount(extAssetA)
+		this.amount_reserveB = getAssetAmount(extAssetB)
+		this.code_reserveA = getAssetCode(extAssetA)
+		this.code_reserveB = getAssetCode(extAssetB)
+		this.precision_reserveA = getAssetPrecision(extAssetA)
+		this.precision_reserveB = getAssetPrecision(extAssetB)
 		this.tokenA_price = null	
 	}
 
@@ -45,7 +41,7 @@ export default class LiquidityRow {
 			extAssetB: null
 		}
 		if(src === 'taco' && actname === 'liquiditylog') {
-			ret.pair_id = getCodeFromAsset(asset(actdata.lp_token))
+			ret.pair_id = getAssetCode(actdata.lp_token)
 			ret.extAssetA = actdata.pool1
 			ret.extAssetB = actdata.pool2
 		}

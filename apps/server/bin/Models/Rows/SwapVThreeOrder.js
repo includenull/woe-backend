@@ -1,11 +1,7 @@
-import { asset, symbol, extended_asset, name, extended_symbol } from "eos-common"
+import { getAssetAmount, getAssetCode, getAssetPrecision } from '../../../utils/wharfAssets.js'
 import {parseDateFromSmartcontract} from '../../../utils/utils.js'
 import getDb from '../../Connectors/DbPGConnector.js'
 import getRedis from '../../Connectors/RedisConnector.js'
-
-const getAmountFromAsset = (asset) => asset.amount/Math.pow(10, asset.symbol.precision())
-const getCodeFromAsset = (asset) => asset.symbol.code().toString()
-const getPrecisionFromAsset = (asset) => asset.symbol.precision()
 
 class SwapVThreeOrderRow {
 	constructor({
@@ -37,16 +33,16 @@ class SwapVThreeOrderRow {
 		this.sqrtPriceX64 = sqrtPriceX64;
 		this.liquidity = liquidity;
 		this.tick = tick;
-		this.amountA = Math.abs(1*getAmountFromAsset(asset(tokenA)));
-		this.amountB = Math.abs(1*getAmountFromAsset(asset(tokenB)));
-		this.negativeA = (1*getAmountFromAsset(asset(tokenA)) < 0);
-		this.negativeB = (1*getAmountFromAsset(asset(tokenB)) < 0);
-		this.codeA = getCodeFromAsset(asset(reserveA));
-		this.codeB = getCodeFromAsset(asset(reserveB));
-		this.precisionA = getPrecisionFromAsset(asset(reserveA));
-		this.precisionB = getPrecisionFromAsset(asset(reserveB));
-		this.reserveA = getAmountFromAsset(asset(reserveA));
-		this.reserveB = getAmountFromAsset(asset(reserveB));
+		this.amountA = Math.abs(1*getAssetAmount(tokenA));
+		this.amountB = Math.abs(1*getAssetAmount(tokenB));
+		this.negativeA = (1*getAssetAmount(tokenA) < 0);
+		this.negativeB = (1*getAssetAmount(tokenB) < 0);
+		this.codeA = getAssetCode(reserveA);
+		this.codeB = getAssetCode(reserveB);
+		this.precisionA = getAssetPrecision(reserveA);
+		this.precisionB = getAssetPrecision(reserveB);
+		this.reserveA = getAssetAmount(reserveA);
+		this.reserveB = getAssetAmount(reserveB);
 		this.created_at_block = block_num,
 		this.global_sequence = global_sequence,
 		this.updated_at_time = parseDateFromSmartcontract(trx_time).getTime()

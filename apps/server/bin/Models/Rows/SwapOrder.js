@@ -1,11 +1,7 @@
-import { asset, symbol, extended_asset, name, extended_symbol } from "eos-common"
+import { getAssetAmount, getAssetCode, getAssetPrecision } from '../../../utils/wharfAssets.js'
 import {parseDateFromSmartcontract} from '../../../utils/utils.js'
 import getDb from '../../Connectors/DbPGConnector.js'
 import getRedis from '../../Connectors/RedisConnector.js'
-
-const getAmountFromAsset = (asset) => asset.amount/Math.pow(10, asset.symbol.precision())
-const getCodeFromAsset = (asset) => asset.symbol.code().toString()
-const getPrecisionFromAsset = (asset) => asset.symbol.precision()
 
 class SwapOrderRow {
 	constructor({
@@ -29,18 +25,18 @@ class SwapOrderRow {
 		this.action_ordinal = action_ordinal
 		this.pair_id = pair_id
 		this.maker = maker
-		this.amount_in = getAmountFromAsset(asset(quantity_in))
-		this.amount_out = getAmountFromAsset(asset(quantity_out))
-		this.code_in = getCodeFromAsset(asset(quantity_in))
-		this.code_out = getCodeFromAsset(asset(quantity_out))
-		this.precision_in = getPrecisionFromAsset(asset(quantity_in))
-		this.precision_out = getPrecisionFromAsset(asset(quantity_out))
-		this.amount_reserveA = getAmountFromAsset(asset(reserveA))
-		this.amount_reserveB = getAmountFromAsset(asset(reserveB))
-		this.code_reserveA = getCodeFromAsset(asset(reserveA))
-		this.code_reserveB = getCodeFromAsset(asset(reserveB))
-		this.precision_reserveA = getPrecisionFromAsset(asset(reserveA))
-		this.precision_reserveB = getPrecisionFromAsset(asset(reserveB))
+		this.amount_in = getAssetAmount(quantity_in)
+		this.amount_out = getAssetAmount(quantity_out)
+		this.code_in = getAssetCode(quantity_in)
+		this.code_out = getAssetCode(quantity_out)
+		this.precision_in = getAssetPrecision(quantity_in)
+		this.precision_out = getAssetPrecision(quantity_out)
+		this.amount_reserveA = getAssetAmount(reserveA)
+		this.amount_reserveB = getAssetAmount(reserveB)
+		this.code_reserveA = getAssetCode(reserveA)
+		this.code_reserveB = getAssetCode(reserveB)
+		this.precision_reserveA = getAssetPrecision(reserveA)
+		this.precision_reserveB = getAssetPrecision(reserveB)
 		this.created_at_block = block_num
 		this.global_sequence = global_sequence
 		this.updated_at_time = parseDateFromSmartcontract(trx_time).getTime()

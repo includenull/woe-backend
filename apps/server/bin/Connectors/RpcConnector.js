@@ -1,9 +1,5 @@
-import { JsonRpc } from 'eosjs'
-
-// Used for full table fetch
-import { APIClient } from '@wharfkit/antelope'
+import { APIClient, Serializer } from '@wharfkit/antelope'
 import { ContractKit } from '@wharfkit/contract'
-import { Serializer } from '@wharfkit/antelope'
 
 import { delay } from '../../utils/utils.js'
 import AppConfig from '../../config.js'
@@ -62,19 +58,21 @@ class RpcConnector {
     const selectedRpc = this.selectRpc()
     this.selectedRpc = selectedRpc
     this.updateLastUse(selectedRpc.url)
-    this.rpc = new JsonRpc(selectedRpc.url, { fetch }) 
+    this.rpc = new APIClient({ url: selectedRpc.url })
+  }
+
+  getSelectedRpcUrl() {
+    return this.selectedRpc.url
   }
 }
 
 const rpcConnector = new RpcConnector()
 
-export const rpc = rpcConnector.rpc
-
 export const getInfo = async () => {
   rpcConnector.changeRpc()
-  const rpcUrl = rpcConnector.rpc.endpoint
+  const rpcUrl = rpcConnector.getSelectedRpcUrl()
   try {
-    const res = await rpcConnector.rpc.get_info()
+    const res = await rpcConnector.rpc.v1.chain.get_info()
     return res
   }
   catch(e) {
@@ -95,15 +93,15 @@ export const getInfo = async () => {
 // Fetch full table using eosjs query and a loop for pages
 export const fetchTable = async(contract, scope, table, params = {}, prevRows = []) => {
   rpcConnector.changeRpc()
-  const rpcUrl = rpcConnector.rpc.endpoint
+  const rpcUrl = rpcConnector.getSelectedRpcUrl()
   try {
-    const res = await rpcConnector.rpc.get_table_rows({
+    const res = await rpcConnector.rpc.v1.chain.get_table_rows({
       code: contract,
-      scope: scope,
-      table: table,
+      scope,
+      table,
       limit: params.limit || 1000,
-      lower_bound: params.lower_bound || null,
-      upper_bound: params.upper_bound || null,
+      lower_bound: params.lower_bound || undefined,
+      upper_bound: params.upper_bound || undefined,
       reverse: false,
       show_payer: false,
       json: true,
@@ -143,12 +141,10 @@ export const fetchTable = async(contract, scope, table, params = {}, prevRows = 
 **/
 export const fetchFullTable = async(contract, scope, table, objectify = false) => {
   rpcConnector.changeRpc()
-  const rpcUrl = rpcConnector.rpc.endpoint
+  const rpcUrl = rpcConnector.getSelectedRpcUrl()
   try {
-    // Create APIClient
-    const client = new APIClient({url: rpcUrl})
     // Create Kit
-    const contractKit = new ContractKit({client})
+    const contractKit = new ContractKit({ client: rpcConnector.rpc })
     // Load contract
     const contractQ = await contractKit.load(contract)
     // Access table and query for all rows
@@ -172,6 +168,6 @@ export const fetchFullTable = async(contract, scope, table, objectify = false) =
     }
     // Add random possibility to multiply delay x2 so if there is many requests error they get delayed between them
     await delay(AppConfig.rpc_delay_error + Math.random() * AppConfig.rpc_delay_error)
-    return await fetchFullTable(contract, scope, table)
+    return await fetchFullTable(contract, scope, table, objectify)
   }
 }
