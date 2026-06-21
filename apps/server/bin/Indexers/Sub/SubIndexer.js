@@ -40,6 +40,7 @@ export default class SubIndexer {
 		let ret = {}
 
 		for(const ti of this.tables_interest) {
+			console.log('fetch '+ti.code+' '+ti.table+' for '+scopes.length+' scopes')
 			if(ret[ti.code] === undefined)
 				ret[ti.code] = {}
 
@@ -55,6 +56,8 @@ export default class SubIndexer {
 						ret[ti.code][ti.table][scope] = {}
 						// console.log(i+1 + ' / ' + scopes.length + ' fetching scope '+scope+' table '+ti.table)
 						ret[ti.code][ti.table][scope].rows = await this.fetchCodeTableScope(ti.code, ti.table, scope)
+						if((i + 1) % 50 === 0 || i + 1 === scopes.length)
+							console.log((i + 1)+' / '+scopes.length+' fetched '+ti.code+' '+ti.table)
 						resolve(true)
 					}, i*AppConfig.rpc_delay);
 				}));

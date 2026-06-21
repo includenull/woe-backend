@@ -183,6 +183,7 @@ export default class RowsIndexer {
 		await this.connectReaderrows();
 
 		for(const subIndexer of Object.keys(this.indexers) ) {
+			console.log(subIndexer + ' subIndexer first init start')
 			const indexerRows = await this.indexers[subIndexer].fetchRows()
 
 			for(const code of Object.keys(indexerRows)) {
