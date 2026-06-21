@@ -12,6 +12,9 @@
     "dev:web": "pnpm --filter @waxonedge/web dev",
     "server:api": "pnpm --filter @waxonedge/server start_api"
   },
+  "resolutions": {
+    "@wharfkit/antelope": "1.2.0"
+  },
   "devDependencies": {
     "@biomejs/biome": "latest",
     "typescript": "latest",
