@@ -5,9 +5,8 @@ WORKDIR /workspace
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json eslint.config.mjs .prettierrc.json .prettierignore ./
 COPY apps/server/package.json apps/server/package.json
 COPY apps/web/package.json apps/web/package.json
-COPY packages/ship/package.json packages/ship/package.json
-COPY packages/ship/dist packages/ship/dist
 COPY packages/api-contracts/package.json packages/api-contracts/package.json
+COPY packages/ship/package.json packages/ship/package.json
 
 RUN pnpm install --frozen-lockfile --store-dir /pnpm/store
 
