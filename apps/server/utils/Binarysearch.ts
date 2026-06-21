@@ -1,4 +1,3 @@
-import logger from './logger.js';
 /**
  * Example usage
   const optimalBidSplit = optimize(pool0, pool1, 0.1, 1000);

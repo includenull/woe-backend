@@ -63,16 +63,21 @@ class KlinesIndexer {
   }
 
 	async waitForApiToBeReady() {
-		const api_status = await fetchIndexerApi('/status')
+		while (true) {
+			const api_status = await fetchIndexerApi('/status')
 
-		if(api_status === [] || api_status?.ready === false) {
-			logger.info('Indexer api not ready, wait 30 seconds')
-			await delay(30000)
-			return await this.waitForApiToBeReady()
+			if (
+				(Array.isArray(api_status) && api_status.length === 0) ||
+				api_status?.ready === false
+			) {
+				logger.info('Indexer api not ready, wait 30 seconds')
+				await delay(30000)
+				continue
+			}
+
+			logger.info('Indexer api is ready')
+			return
 		}
-		
-		logger.info('Indexer api is ready')
-		return;
 	}
 
 	async init() {

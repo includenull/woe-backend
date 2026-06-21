@@ -113,16 +113,21 @@ export default class LastStatsIndexer {
 	}
 
 	async waitForApiToBeReady() {
-		const api_status = await fetchIndexerApi('/status')
+		while (true) {
+			const api_status = await fetchIndexerApi('/status')
 
-		if(api_status === [] || api_status?.ready === false) {
-			logger.info('Indexer api not ready, wait 30 seconds')
-			await delay(30000)
-			return await this.waitForApiToBeReady()
+			if (
+				(Array.isArray(api_status) && api_status.length === 0) ||
+				api_status?.ready === false
+			) {
+				logger.info('Indexer api not ready, wait 30 seconds')
+				await delay(30000)
+				continue
+			}
+
+			logger.info('Indexer api is ready')
+			return
 		}
-		
-		logger.info('Indexer api is ready')
-		return;
 	}
 
 	async init() {
@@ -750,7 +755,7 @@ export default class LastStatsIndexer {
 
 	 		logger.info(worker_id+': Computing last volumes')
 	 		for(const srcType of Object.keys(last30dTrades)) {
-	 			const computedLastVolumes = await this.computeLastVolumes(srcType, last30dTrades[srcType])
+	 			await this.computeLastVolumes(srcType, last30dTrades[srcType])
 	 		}
 
 	 		logger.info(worker_id+': Last stats volumes work done in '+Math.floor((Date.now() - startTime) / 1000)+' seconds')

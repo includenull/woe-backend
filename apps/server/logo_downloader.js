@@ -62,7 +62,7 @@ function gitClone(repositoryUrl, outputPath) {
   	logger.info('Cloning repository '+repositoryUrl)
     const command = `git clone ${repositoryUrl} ${outputPath}`;
 
-    exec(command, (error, stdout, stderr) => {
+    exec(command, (error) => {
       if (error) {
         logger.error(`Error executing git clone: ${error.message}`);
         reject(error);

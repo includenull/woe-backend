@@ -1,5 +1,4 @@
 import { precise } from '@utils/utils.js'
-import logger from '@utils/logger.js';
 
 class Pool {
 	constructor(pairid, src, fee, lptoken, token0, token1, reserve0, reserve1, input_min_units, active = true) {
