@@ -255,23 +255,21 @@ export default class StateHistoryBlockReader {
     response: GetBlocksResultV0,
   ): Promise<void> {
     this.processingChain = this.processingChain.then(async () => {
-      try {
-        const blockResponse = await this.buildBlockResponse(type, response);
+      const blockResponse = await this.buildBlockResponse(type, response);
 
-        if (!blockResponse) {
-          return;
-        }
-
-        if (this.consumer) {
-          await this.consumer(blockResponse);
-        }
-
-        this.currentArgs.start_block_num =
-          blockResponse.this_block.block_num + 1;
-      } finally {
+      if (!blockResponse) {
         this.ackPending += 1;
         this.flushAcksIfNeeded();
+        return;
       }
+
+      if (this.consumer) {
+        await this.consumer(blockResponse);
+      }
+
+      this.currentArgs.start_block_num = blockResponse.this_block.block_num + 1;
+      this.ackPending += 1;
+      this.flushAcksIfNeeded();
     });
 
     await this.processingChain;
@@ -443,11 +441,16 @@ export default class StateHistoryBlockReader {
     type: string,
     response: GetBlocksResultV0,
   ): Promise<ShipBlockResponse | null> {
-    if (!response.this_block || !response.prev_block || !response.block) {
+    if (!response.this_block) {
       return null;
     }
 
-    const block = await this.deserializeBlock(type, response.block);
+    const block = response.block
+      ? ((await this.deserializeBlock(type, response.block)) as Record<
+          string,
+          unknown
+        >)
+      : {};
     const traces = response.traces
       ? ((await this.deserializeParallel(
           "transaction_trace[]",
@@ -465,10 +468,13 @@ export default class StateHistoryBlockReader {
       head: response.head,
       last_irreversible: response.last_irreversible,
       this_block: response.this_block,
-      prev_block: response.prev_block,
+      prev_block: response.prev_block ?? {
+        block_num: Math.max(0, response.this_block.block_num - 1),
+        block_id: "",
+      },
       block: {
         ...response.this_block,
-        ...(block as Record<string, unknown>),
+        ...block,
         head: response.head,
         last_irreversible: response.last_irreversible,
       },
