@@ -4,7 +4,6 @@ services:
     build:
       context: .
       dockerfile: images/node-reader/Dockerfile
-    user: "root"
     working_dir: /workspace/apps/server
     environment:
       - NODE_ENV=production
@@ -24,7 +23,6 @@ services:
     build:
       context: .
       dockerfile: images/node-reader/Dockerfile
-    user: "root"
     working_dir: /workspace/apps/server
     environment:
       - NODE_ENV=production
@@ -41,7 +39,6 @@ services:
     build:
       context: .
       dockerfile: images/node-reader/Dockerfile
-    user: "root"
     working_dir: /workspace/apps/server
     environment:
       - NODE_ENV=production
@@ -60,7 +57,6 @@ services:
     build:
       context: .
       dockerfile: images/node-reader/Dockerfile
-    user: "root"
     working_dir: /workspace/apps/server
     environment:
       - NODE_ENV=production
@@ -77,7 +73,6 @@ services:
     build:
       context: .
       dockerfile: images/node-reader/Dockerfile
-    user: "root"
     working_dir: /workspace/apps/server
     environment:
       - NODE_ENV=production
@@ -96,7 +91,6 @@ services:
     build:
       context: .
       dockerfile: images/node-reader/Dockerfile
-    user: "root"
     working_dir: /workspace/apps/server
     stop_grace_period: 60s
     environment:
@@ -117,7 +111,6 @@ services:
     build:
       context: .
       dockerfile: images/node-reader/Dockerfile
-    user: "root"
     working_dir: /workspace/apps/server
     environment:
       - NODE_ENV=production
@@ -138,7 +131,6 @@ services:
     build:
       context: .
       dockerfile: images/node-reader/Dockerfile
-    user: "root"
     working_dir: /workspace/apps/server
     environment:
       - NODE_ENV=production

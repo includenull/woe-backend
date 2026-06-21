@@ -9,4 +9,7 @@ COPY packages/api-contracts/package.json packages/api-contracts/package.json
 
 RUN pnpm install --frozen-lockfile --store-dir /pnpm/store
 
+RUN groupadd --system waxonedge && useradd --system --gid waxonedge --home-dir /home/waxonedge --create-home waxonedge
+USER waxonedge
+
 CMD ["node"]
