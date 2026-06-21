@@ -15,7 +15,7 @@ import LimitLogOrderFillRow from '@models/Rows/LimitLogOrderFill.js';
 import LimitLogOrderCloseRow from '@models/Rows/LimitLogOrderClose.js';
 
 import {delay} from './utils/utils.js';
-import { validateCandlesQuery, validateSwapRoutesQuery, swapRouteQueryParams } from './utils/apiValidation.js';
+import { parseCandlesQuery, validateSwapRoutesQuery, swapRouteQueryParams } from './utils/apiValidation.js';
 import { fetchIndexerApi, fetchKlinesIndexerApi, fetchLastStatsApi } from '@class/apiFetcher.js';
 import { getInfo } from '@connectors/RpcConnector.js';
 
@@ -171,9 +171,9 @@ app.get('/wax_price/:contract/:ticker', async(req, res) => {
 })
 
 app.get('/candles', async(req, res, next) => {
-	const validation = validateCandlesQuery(req.query);
-	if(!validation.valid) {
-		res.status(400).json({ error: validation.error });
+	const candleQuery = parseCandlesQuery(req.query);
+	if(!candleQuery.valid) {
+		res.status(400).json({ error: candleQuery.error });
 		return false;
 	}
 
@@ -185,11 +185,11 @@ app.get('/candles', async(req, res, next) => {
 	let candles = []
 	try {
 		candles = await KlineRows.fetchRows({
-			duration: req.query.duration,
-			src: req.query.src,
-			pair_id: req.query.pair_id,
-			startAt: 1*req.query.startAt,
-			endAt: 1*req.query.endAt,
+			duration: candleQuery.value.duration,
+			src: candleQuery.value.src,
+			pair_id: candleQuery.value.pair_id,
+			startAt: candleQuery.value.startAt,
+			endAt: candleQuery.value.endAt,
 			//limit: req.query.countBack // No limit -> In the unlikely case that the number of bars in the requested range is larger than the countBack value, then you should return all the bars in that range instead of truncating it to the countBack length.
 		})
 		//console.log('initial candles length', candles.length)
@@ -200,13 +200,13 @@ app.get('/candles', async(req, res, next) => {
 	}
 
 	// If the number of bars in the requested range is less than the countBack value, you should include earlier bars until the countBack count is reached. For example, the chart requests 300 bars in the range [2019-06-01T00:00:00..2020-01-01T00:00:00), and your backend have only 250 bars in the requested period. Return these 250 bars and 50 bars prior to 2019-06-01T00:00:00.
-	if(candles.length < req.query.countBack) {
+	if(candles.length < candleQuery.value.countBack) {
 		const leftCandles = await KlineRows.fetchRows({
-			duration: req.query.duration,
-			src: req.query.src,
-			pair_id: req.query.pair_id,
-			endAt: req.query.startAt,
-			limit: req.query.countBack - candles.length,
+			duration: candleQuery.value.duration,
+			src: candleQuery.value.src,
+			pair_id: candleQuery.value.pair_id,
+			endAt: candleQuery.value.startAt,
+			limit: candleQuery.value.countBack - candles.length,
 			orderBy: 'DESC' // we want last candles of the range so desc order is required
 		})
 		// put back into asc order
@@ -214,7 +214,7 @@ app.get('/candles', async(req, res, next) => {
 		candles = leftCandles.concat(candles)
 	}
 
-	if(req.query.is_reversed === 'true')
+	if(candleQuery.value.is_reversed)
 		candles = KlineRows.reverseCandles(candles)
 
 	resGzipJson(candles, res)
