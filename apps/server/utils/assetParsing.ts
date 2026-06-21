@@ -8,7 +8,7 @@ export function parseTokenRef(value: string): TokenRef {
   }
 
   return {
-    ticker: value.slice(0, separatorIndex),
-    contract: value.slice(separatorIndex + 1)
+    ticker: value.slice(0, separatorIndex).trim(),
+    contract: value.slice(separatorIndex + 1).trim()
   };
 }

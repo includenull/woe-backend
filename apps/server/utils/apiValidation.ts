@@ -9,6 +9,15 @@ export interface ValidationResult {
 const hasParams = (query: QueryParams, params: string[]) =>
   params.every((param) => Object.prototype.hasOwnProperty.call(query, param));
 
+const toFiniteNumber = (value: QueryValue) => {
+  if (Array.isArray(value)) {
+    return null;
+  }
+
+  const numberValue = Number(value);
+  return Number.isFinite(numberValue) ? numberValue : null;
+};
+
 export const candleQueryParams = [
   "duration",
   "src",
@@ -43,15 +52,30 @@ export function validateSwapRoutesQuery(query: QueryParams): ValidationResult {
     return { valid: false, error: "Missing params!" };
   }
 
-  if (Number(query.amount_in) <= 0) {
+  const amountIn = toFiniteNumber(query.amount_in);
+  if (amountIn === null) {
+    return { valid: false, error: "Amount in must be a valid number" };
+  }
+
+  if (amountIn <= 0) {
     return { valid: false, error: "Amount in must be positive" };
   }
 
-  if (Number(query.slippage) > 10000) {
+  const slippage = toFiniteNumber(query.slippage);
+  if (slippage === null) {
+    return { valid: false, error: "Slippage must be a valid number" };
+  }
+
+  if (slippage > 10000) {
     return { valid: false, error: "Slippage can't be over 10000" };
   }
 
-  if (Number(query.split_max_routes) > 10) {
+  const splitMaxRoutes = toFiniteNumber(query.split_max_routes);
+  if (splitMaxRoutes === null) {
+    return { valid: false, error: "Split max routes must be a valid number" };
+  }
+
+  if (splitMaxRoutes > 10) {
     return { valid: false, error: "Split max routes can't be over 10" };
   }
 

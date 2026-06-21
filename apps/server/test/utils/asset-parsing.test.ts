@@ -8,4 +8,11 @@ describe("parseTokenRef", () => {
       contract: "eosio.token"
     });
   });
+
+  it("trims token reference parts", () => {
+    expect(parseTokenRef(" WAX _ eosio.token ")).toEqual({
+      ticker: "WAX",
+      contract: "eosio.token"
+    });
+  });
 });
