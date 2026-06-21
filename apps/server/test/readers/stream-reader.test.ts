@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import StreamReader from "../../bin/Readers/Stream.js";
+import {
+  getBlockTimestamp,
+  makeDateForSmartcontract,
+} from "../../utils/utils.js";
 
 function createReader(actionsInterest: any[]): StreamReader {
   return new StreamReader(
@@ -102,5 +106,32 @@ describe("StreamReader", () => {
         ],
       }),
     ).resolves.toEqual([]);
+  });
+
+  it("uses a block-number timestamp fallback when signed block metadata is missing", async () => {
+    const reader = createReader([]) as any;
+    reader.shipAdapter = {
+      decodeMatchingActions: async () => [],
+    };
+
+    await expect(
+      reader.toReaderBlock({
+        head: { block_num: 101, block_id: "head" },
+        last_irreversible: { block_num: 99, block_id: "lib" },
+        this_block: { block_num: 100, block_id: "block" },
+        prev_block: { block_num: 99, block_id: "prev" },
+        block: {
+          block_num: 100,
+          block_id: "block",
+          head: { block_num: 101, block_id: "head" },
+          last_irreversible: { block_num: 99, block_id: "lib" },
+        },
+        traces: [],
+        deltas: [],
+      }),
+    ).resolves.toMatchObject({
+      timestamp: makeDateForSmartcontract(getBlockTimestamp(100)),
+      producer: "",
+    });
   });
 });

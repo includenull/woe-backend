@@ -19,6 +19,7 @@ import AppConfig from "../../config.js";
 import { getInfo } from "./utils.js";
 import { ShipReaderAdapter } from "./shipAdapter.js";
 import logger from "@utils/logger.js";
+import { getBlockTimestamp, makeDateForSmartcontract } from "@utils/utils.js";
 
 export default class StreamReader {
   actions_interest: any[];
@@ -118,8 +119,12 @@ export default class StreamReader {
       chain_id: "",
       block_num: shipBlock.this_block.block_num,
       block_id: shipBlock.this_block.block_id,
-      timestamp: block.timestamp,
-      producer: block.producer,
+      timestamp:
+        block.timestamp ??
+        makeDateForSmartcontract(
+          getBlockTimestamp(shipBlock.this_block.block_num),
+        ),
+      producer: block.producer ?? "",
       actions,
       transactions,
       table_rows: [],

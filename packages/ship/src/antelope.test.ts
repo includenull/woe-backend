@@ -249,6 +249,104 @@ describe("antelope helpers", () => {
     ]);
   });
 
+  it("skips action traces without receipt global sequence", () => {
+    const transaction = [
+      "transaction_trace_v0",
+      {
+        id: "trx",
+        status: 0,
+        cpu_usage_us: 1,
+        net_usage_words: 1,
+        elapsed: "1",
+        net_usage: "1",
+        scheduled: false,
+        action_traces: [
+          [
+            "action_trace_v0",
+            {
+              action_ordinal: 1,
+              creator_action_ordinal: 0,
+              receiver: "swap.test",
+              act: {
+                account: "swap.test",
+                name: "failedinline",
+                authorization: [],
+                data: "00",
+              },
+              context_free: false,
+              elapsed: "0",
+              console: "",
+              account_ram_deltas: [],
+              except: { message: "failed inline action" },
+              error_code: null,
+            },
+          ],
+          [
+            "action_trace_v0",
+            {
+              action_ordinal: 2,
+              creator_action_ordinal: 0,
+              receipt: [
+                "action_receipt_v0",
+                {
+                  receiver: "swap.test",
+                  act_digest: "digest",
+                  global_sequence: "11",
+                  recv_sequence: "1",
+                  auth_sequence: [],
+                  code_sequence: 1,
+                  abi_sequence: 1,
+                },
+              ],
+              receiver: "swap.test",
+              act: {
+                account: "swap.test",
+                name: "swap",
+                authorization: [],
+                data: "00",
+              },
+              context_free: false,
+              elapsed: "0",
+              console: "",
+              account_ram_deltas: [],
+              except: null,
+              error_code: null,
+            },
+          ],
+        ],
+        account_ram_delta: null,
+        except: null,
+        error_code: null,
+        failed_dtrx_trace: null,
+        partial: [
+          "partial_transaction_v0",
+          {
+            expiration: "",
+            ref_block_num: 0,
+            ref_block_prefix: 0,
+            max_net_usage_words: 0,
+            max_cpu_usage_ms: 0,
+            delay_sec: 0,
+            transaction_extensions: [],
+            signatures: [],
+            context_free_data: [],
+          },
+        ],
+      },
+    ] as unknown as ShipTransactionTrace;
+
+    expect(extractShipTraces([transaction])).toMatchObject([
+      {
+        trace: {
+          global_sequence: "11",
+          act: {
+            name: "swap",
+          },
+        },
+      },
+    ]);
+  });
+
   it("extracts present and deleted contract rows", () => {
     const deltas: ShipTableDelta[] = [
       [

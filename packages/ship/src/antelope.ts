@@ -94,12 +94,17 @@ export function extractShipTraces(
         throw new Error(`Unsupported action trace type ${actionTrace[0]}`);
       }
 
+      const globalSequence = actionTrace[1].receipt?.[1]?.global_sequence;
+      if (!globalSequence) {
+        continue;
+      }
+
       result.push({
         txId,
         trace: {
           action_ordinal: actionTrace[1].action_ordinal,
           creator_action_ordinal: actionTrace[1].creator_action_ordinal,
-          global_sequence: actionTrace[1].receipt[1].global_sequence,
+          global_sequence: globalSequence,
           account_ram_deltas: actionTrace[1].account_ram_deltas,
           act: {
             account: actionTrace[1].act.account,
