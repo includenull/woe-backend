@@ -79,7 +79,7 @@ cp .env.example .env
 
 ### Start block
 
-Before starting, set the `start_block` variable in `app/config.js` to a recent block number. This is the point from which the reader will begin indexing history — the further back it is, the longer the catch-up phase will take.
+By default, the reader starts from the current estimated head block minus 10000. To override this, set `START_BLOCK` in `.env` to a specific block number. This is the point from which the reader will begin indexing history — the further back it is, the longer the catch-up phase will take.
 
 On startup, the reader first replays missed blocks by fetching historical transactions from the Hyperion API, then automatically switches to the live WAX state history stream once it has caught up.
 

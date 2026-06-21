@@ -1,0 +1,25 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": false,
+    "allowJs": true,
+    "checkJs": false,
+    "noEmit": true,
+    "ignoreDeprecations": "6.0",
+    "baseUrl": ".",
+    "paths": {
+      "@root/*": ["./*"],
+      "@utils/*": ["utils/*"],
+      "@bin/*": ["bin/*"],
+      "@class/*": ["bin/Class/*"],
+      "@connectors/*": ["bin/Connectors/*"],
+      "@exchanges/*": ["bin/Exchanges/*"],
+      "@indexers/*": ["bin/Indexers/*"],
+      "@models/*": ["bin/Models/*"],
+      "@readers/*": ["bin/Readers/*"]
+    }
+  },
+  "include": ["*.js", "*.ts", "bin/**/*", "utils/**/*", "libs/**/*", "test/**/*"]
+}

@@ -1,0 +1,23 @@
+{
+  "name": "waxonedge",
+  "private": true,
+  "packageManager": "pnpm@10.15.1",
+  "engines": {
+    "node": ">=22 <25"
+  },
+  "scripts": {
+    "typecheck": "pnpm -r typecheck",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "dev:web": "pnpm --filter @waxonedge/web dev",
+    "server:api": "pnpm --filter @waxonedge/server start_api"
+  },
+  "resolutions": {
+    "@wharfkit/antelope": "1.2.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "latest",
+    "typescript": "latest",
+    "vitest": "4.1.9"
+  }
+}

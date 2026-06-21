@@ -1,4 +1,9 @@
-app/node_modules/
-app/.env
-app/package-lock.json
-app/tokens_logo/*
+node_modules/
+apps/*/node_modules/
+apps/server/.env
+apps/server/tokens_logo/*
+dist/
+!apps/server/libs/antelope-ship-reader/dist/
+coverage/
+*.tsbuildinfo
+*.log
