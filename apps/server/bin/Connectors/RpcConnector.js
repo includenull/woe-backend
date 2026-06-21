@@ -90,7 +90,7 @@ export const getInfo = async () => {
   }
 }
 
-// Fetch full table using eosjs query and a loop for pages
+// Fetch full table using an RPC query and a loop for pages
 export const fetchTable = async(contract, scope, table, params = {}, prevRows = []) => {
   rpcConnector.changeRpc()
   const rpcUrl = rpcConnector.getSelectedRpcUrl()
@@ -137,7 +137,7 @@ export const fetchTable = async(contract, scope, table, params = {}, prevRows = 
  * @param contract: contract name
  * @param scope: scope name or same as contract if there is no scope
  * @param table: table name
- * @param objectify: Convert rows back to raw json to get a return like eosjs
+ * @param objectify: Convert rows back to raw json
 **/
 export const fetchFullTable = async(contract, scope, table, objectify = false) => {
   rpcConnector.changeRpc()
