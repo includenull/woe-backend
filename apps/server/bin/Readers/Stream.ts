@@ -175,11 +175,19 @@ export default class StreamReader {
   }
 
   getSourceActionInterest(action: any) {
-    const match = this.actions_interest.filter(
+    const exactMatch = this.actions_interest.find(
       (ai) => ai.account === action.account && ai.actname === action.name,
     );
 
-    return match.length ? match[0] : null;
+    if (exactMatch) {
+      return exactMatch;
+    }
+
+    const wildcardMatch = this.actions_interest.find(
+      (ai) => ai.account === action.account && ai.actname === "*",
+    );
+
+    return wildcardMatch ? { ...wildcardMatch, actname: action.name } : null;
   }
 
   async processBlock(block: any) {
