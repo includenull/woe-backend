@@ -55,8 +55,8 @@ export default class SubIndexer {
 					setTimeout(async () => {
 						try {
 							const scope = scopes[i];
-							ret[ti.code][ti.table][scope] = {}
-							ret[ti.code][ti.table][scope].rows = await this.fetchCodeTableScope(ti.code, ti.table, scope)
+							const rows = await this.fetchCodeTableScope(ti.code, ti.table, scope)
+							ret[ti.code][ti.table][scope] = { rows }
 							if((i + 1) % 50 === 0 || i + 1 === scopes.length)
 								logger.info((i + 1)+' / '+scopes.length+' fetched '+ti.code+' '+ti.table)
 							resolve(true)

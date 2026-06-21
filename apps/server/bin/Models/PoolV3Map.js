@@ -16,7 +16,7 @@ export default class PoolV3Map {
 
 	async init() {
 		const pools = await AlcorPoolV3.fetchPools()
-		this.savePools(pools)
+		await this.savePools(pools)
 
 		return true
 	}
@@ -70,10 +70,10 @@ export default class PoolV3Map {
 		return pools
 	}
 
-	savePools(pools) {
+	async savePools(pools) {
 		try {
 			for(let i = 0; i < pools.length; ++i)
-				this.savePool(pools[i]);
+				await this.savePool(pools[i]);
 
 			return true
 		}
@@ -160,9 +160,9 @@ export default class PoolV3Map {
     })
 	}
 
-	insertPoolWithRow(row) {
+	async insertPoolWithRow(row) {
 		const pool = PoolV3Map.createPoolFromRow(row)
-		this.savePool(pool)
+		await this.savePool(pool)
 		logger.info({ pool }, 'insertPoolWithRow')
 	}
 
