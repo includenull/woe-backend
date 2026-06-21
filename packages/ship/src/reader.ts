@@ -412,11 +412,15 @@ export default class StateHistoryBlockReader {
   }
 
   private send(request: [string, unknown]): void {
-    if (!this.ws || !this.shipAbi) {
+    if (!this.ws || !this.shipAbi || this.ws.readyState !== WebSocket.OPEN) {
       return;
     }
 
-    this.ws.send(serializeEosioType("request", request, this.shipAbi));
+    try {
+      this.ws.send(serializeEosioType("request", request, this.shipAbi));
+    } catch (error) {
+      this.logger.error("Failed to send SHIP websocket request", { error });
+    }
   }
 
   private flushAcksIfNeeded(force = false): void {

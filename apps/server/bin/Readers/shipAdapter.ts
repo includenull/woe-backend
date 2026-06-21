@@ -61,7 +61,8 @@ function actionMatchesInterest(
 ): boolean {
   return actionsInterest.some(
     (interest) =>
-      interest.account === action.account && interest.actname === action.name,
+      interest.account === action.account &&
+      (interest.actname === action.name || interest.actname === "*"),
   );
 }
 

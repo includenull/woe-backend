@@ -140,6 +140,20 @@ describe("StateHistoryBlockReader", () => {
     expect(reader.shipAbi).toBeNull();
   });
 
+  it("does not send websocket requests when the socket is not open", () => {
+    const reader = createReader() as any;
+    const ws = {
+      readyState: 3,
+      send: vi.fn(),
+    };
+    reader.ws = ws;
+    reader.shipAbi = {};
+
+    reader.send(["get_blocks_ack_request_v0", { num_messages: 1 }]);
+
+    expect(ws.send).not.toHaveBeenCalled();
+  });
+
   it("does not terminate a stale websocket while blocks are queued for processing", () => {
     const reader = createReader() as any;
     const ws = {

@@ -213,6 +213,29 @@ describe("ShipReaderAdapter", () => {
     ]);
   });
 
+  it("supports wildcard action filtering by contract", async () => {
+    const fetchAbi = vi.fn(async (account_name: string) => ({
+      account_name,
+      abi: rawAbi,
+    }));
+    const adapter = new ShipReaderAdapter(fetchAbi);
+    const block = blockWith({
+      traces: [actionTrace("swap.test", "swap")],
+    });
+
+    const actions = await adapter.decodeMatchingActions(block, [
+      { account: "swap.test", actname: "*" },
+    ]);
+
+    expect(actions).toMatchObject([
+      {
+        account: "swap.test",
+        name: "swap",
+        data: { pair_id: 55, maker: "alice" },
+      },
+    ]);
+  });
+
   it("caches fetched ABIs", async () => {
     const fetchAbi = vi.fn(async (account_name: string) => ({
       account_name,
