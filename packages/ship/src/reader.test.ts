@@ -1,3 +1,4 @@
+import { ABI } from "@wharfkit/antelope";
 import { describe, expect, it, vi } from "vitest";
 
 import StateHistoryBlockReader from "./reader.js";
@@ -91,14 +92,11 @@ describe("StateHistoryBlockReader", () => {
     expect(reader.flushAcksIfNeeded).not.toHaveBeenCalled();
   });
 
-  it("continues processing later blocks after a queued block fails", async () => {
+  it("does not process or acknowledge later blocks after a queued block fails", async () => {
     const reader = createReader() as any;
     const consumer = vi.fn();
     const failedBlock = new Error("bad block");
-    reader.buildBlockResponse = vi
-      .fn()
-      .mockRejectedValueOnce(failedBlock)
-      .mockResolvedValueOnce(minimalBlockResponse());
+    reader.buildBlockResponse = vi.fn().mockRejectedValueOnce(failedBlock);
     reader.flushAcksIfNeeded = vi.fn();
     reader.consume(consumer);
 
@@ -107,11 +105,12 @@ describe("StateHistoryBlockReader", () => {
     ).rejects.toThrow("bad block");
     await expect(
       reader.enqueueBlockResult("get_blocks_result_v0", {}),
-    ).resolves.toBeUndefined();
+    ).rejects.toThrow("bad block");
 
-    expect(reader.buildBlockResponse).toHaveBeenCalledTimes(2);
-    expect(consumer).toHaveBeenCalledTimes(1);
-    expect(reader.ackPending).toBe(1);
+    expect(reader.buildBlockResponse).toHaveBeenCalledTimes(1);
+    expect(consumer).not.toHaveBeenCalled();
+    expect(reader.ackPending).toBe(0);
+    expect(reader.currentArgs.start_block_num).toBeUndefined();
   });
 
   it("waits for in-flight processing before reconnect cleanup", async () => {
@@ -175,6 +174,38 @@ describe("StateHistoryBlockReader", () => {
     reader.send(["get_blocks_ack_request_v0", { num_messages: 1 }]);
 
     expect(ws.send).not.toHaveBeenCalled();
+  });
+
+  it("acknowledges consumed messages that are skipped", () => {
+    const reader = createReader() as any;
+    reader.flushAcksIfNeeded = vi.fn();
+
+    reader.acknowledgeConsumedMessage();
+
+    expect(reader.ackPending).toBe(1);
+    expect(reader.flushAcksIfNeeded).toHaveBeenCalledOnce();
+  });
+
+  it("initializes deserialize workers from TypeScript sources", async () => {
+    const reader = new StateHistoryBlockReader("ws://example.invalid", {
+      ds_threads: 1,
+    }) as any;
+    reader.shipAbi = ABI.from({
+      version: "eosio::abi/1.1",
+      types: [],
+      structs: [],
+      actions: [],
+      tables: [],
+      ricardian_clauses: [],
+      error_messages: [],
+      abi_extensions: [],
+      variants: [],
+    } as any);
+
+    await reader.initializeDeserializeWorkers();
+
+    expect(reader.deserializeWorkers).toBeDefined();
+    await reader.deserializeWorkers.destroy();
   });
 
   it("does not terminate a stale websocket while blocks are queued for processing", () => {

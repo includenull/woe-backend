@@ -31,8 +31,6 @@ type PiscinaLike = {
 };
 
 const workerModuleExtension = import.meta.url.endsWith(".ts") ? ".ts" : ".js";
-const shouldUseDeserializeWorkersInCurrentRuntime =
-  workerModuleExtension === ".js";
 
 const noopLogger: ShipReaderLogger = {
   info() {},
@@ -242,6 +240,7 @@ export default class StateHistoryBlockReader {
         type !== "get_blocks_result_v2"
       ) {
         this.logger.warn("Unsupported SHIP message type received", { type });
+        this.acknowledgeConsumedMessage();
         return;
       }
 
@@ -257,39 +256,38 @@ export default class StateHistoryBlockReader {
     response: GetBlocksResultV0,
   ): Promise<void> {
     this.processingBacklog += 1;
-    const blockWork = this.processingChain
-      .catch((error) => {
-        this.logger.error("Previous SHIP block processing failed", { error });
-      })
-      .then(async () => {
-        this.recordShipMessageActivity();
+    const blockWork = this.processingChain.then(async () => {
+      this.recordShipMessageActivity();
 
-        try {
-          const blockResponse = await this.buildBlockResponse(type, response);
+      try {
+        const blockResponse = await this.buildBlockResponse(type, response);
 
-          if (!blockResponse) {
-            this.ackPending += 1;
-            this.flushAcksIfNeeded();
-            return;
-          }
-
-          if (this.consumer) {
-            await this.consumer(blockResponse);
-          }
-
-          this.currentArgs.start_block_num =
-            blockResponse.this_block.block_num + 1;
-          this.ackPending += 1;
-          this.flushAcksIfNeeded();
-        } finally {
-          this.processingBacklog -= 1;
-          this.recordShipMessageActivity();
+        if (!blockResponse) {
+          this.acknowledgeConsumedMessage();
+          return;
         }
-      });
 
-    this.processingChain = blockWork.catch(() => {});
+        if (this.consumer) {
+          await this.consumer(blockResponse);
+        }
+
+        this.currentArgs.start_block_num =
+          blockResponse.this_block.block_num + 1;
+        this.acknowledgeConsumedMessage();
+      } finally {
+        this.processingBacklog -= 1;
+        this.recordShipMessageActivity();
+      }
+    });
+
+    this.processingChain = blockWork;
 
     await blockWork;
+  }
+
+  private acknowledgeConsumedMessage(): void {
+    this.ackPending += 1;
+    this.flushAcksIfNeeded();
   }
 
   private async onClose(): Promise<void> {
@@ -446,14 +444,6 @@ export default class StateHistoryBlockReader {
 
   private async initializeDeserializeWorkers(): Promise<void> {
     if (!this.shipAbi || this.options.ds_threads <= 0) {
-      return;
-    }
-
-    if (!shouldUseDeserializeWorkersInCurrentRuntime) {
-      this.logger.info(
-        "SHIP deserialize workers disabled in tsx/dev runtime; using inline deserialization",
-        { requested: this.options.ds_threads },
-      );
       return;
     }
 
