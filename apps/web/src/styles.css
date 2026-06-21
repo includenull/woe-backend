@@ -1,1 +1,79 @@
 @import "tailwindcss";
+
+/*
+ * WaxOnEdge — "Terminal" design tokens.
+ * This @theme block is the single source of truth for the palette, type, and
+ * radii. Editing a value here updates every utility (bg-surface, text-brand,
+ * border-line, ...) across the app. ui/tokens.ts mirrors these for the catalog.
+ */
+@theme {
+  /* surfaces, darkest to lightest */
+  --color-bg: #0a0b0d;
+  --color-surface: #101216;
+  --color-surface-2: #15181d;
+  --color-line: #1d2127;
+
+  /* text */
+  --color-ink: #e6e9ed;
+  --color-muted: #7b828c;
+
+  /* signal */
+  --color-brand: #c8fa54;
+  --color-up: #26d07c;
+  --color-down: #ff5470;
+
+  /* type: data-dense UI runs on the mono; sans is the reading fallback */
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+  --font-sans: "Inter", system-ui, sans-serif;
+
+  /* the Terminal is built on tight corners */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* tabular figures everywhere numbers live; keeps columns from dancing */
+input {
+  font-family: inherit;
+}
+
+@keyframes woe-pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@keyframes woe-flow-dash {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
