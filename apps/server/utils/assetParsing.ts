@@ -9,6 +9,6 @@ export function parseTokenRef(value: string): TokenRef {
 
   return {
     ticker: value.slice(0, separatorIndex).trim(),
-    contract: value.slice(separatorIndex + 1).trim()
+    contract: value.slice(separatorIndex + 1).trim(),
   };
 }

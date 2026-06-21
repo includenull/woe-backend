@@ -1,12 +1,46 @@
 # AGENTS.md
 
+## Project Overview
+
+WaxOnEdge is a WAX blockchain DEX swap aggregator.
+This is a monorepo containing the backend and the web app.
+
+## Core Priorities
+
+1. Performance first.
+2. Reliability first.
+
+If a tradeoff is required, choose correctness and robustness over short-term convenience.
+
+## Maintainability
+
+Long term maintainability is a core priority. If you add new functionality, first check if there is shared logic that can be extracted to a separate module. Duplicate logic across multiple files is a code smell and should be avoided. Don't be afraid to change existing code. Don't take shortcuts by just adding local logic to solve a problem.
+
+## Package Roles
+
+- `apps/server` - Node.js Express backend API.
+- `apps/web` - React/Vite UI. This is the main frontend interface.
+- `packages/api-contracts` - API contracts.
+- `packages/antelope-ship-reader` - Antelope Ship Reader.
+
+## Task Completion Requirements
+
+Run commands from the repo `root` with **pnpm**.
+
+- `pnpm lint` and `pnpm build` must pass before considering tasks completed.
+  - `pnpm lint` — Prettier check and ESLint on `**/*.{ts,tsx}`.
+  - `pnpm build` — TypeScript compile (`tsx`).
+- Use `pnpm format` to apply formatting when `pnpm lint` fails.
+- When changes affect covered behavior, run `pnpm test` (Vitest).
+
+The dev server is probably already running. If you start a new instance make sure to stop it after you're done.
+
 ## Cursor Cloud specific instructions
 
-WaxOnEdge is a WAX-blockchain DEX swap aggregator. The product is the backend
-(`@waxonedge/server`); `apps/web` is a placeholder React/Vite shell.
-
 ### Services and how to run them
+
 Standard scripts live in `package.json` (root) and `apps/server/package.json`. Key ones:
+
 - API (public REST, port `8000`): `pnpm server:api`
 - Web dev server (Vite, port `5173`): `pnpm dev:web`
 - Background daemons: `pnpm --filter @waxonedge/server start_deamon deamon=<name>`
@@ -15,12 +49,15 @@ Standard scripts live in `package.json` (root) and `apps/server/package.json`. K
 - Lint/test/build/typecheck: `pnpm lint` / `pnpm test` / `pnpm build` / `pnpm typecheck`.
 
 ### Required local infra (already installed in the VM, NOT auto-started)
+
 Redis and PostgreSQL are installed natively but systemd is unavailable, so start them manually:
+
 - Redis: `redis-server /workspace/services_conf/redis.conf --daemonize yes`
   (it requires password `woeredisswaplog`; check with `redis-cli -a woeredisswaplog ping`).
 - PostgreSQL: `sudo pg_ctlcluster 16 main start` (role/db `swaplog`/`swaplog`/`swaplog`).
 
 ### Non-obvious gotchas
+
 - Docker is NOT installed here. The stack is run natively instead of via `docker-compose`.
 - Several hostnames are hardcoded for the Docker network: `redis` (in `apps/server/config.ts`,
   as `redis://:woeredisswaplog@redis:6379`) and `indexer`/`klinesindexer`/`laststatsindexer`
@@ -39,5 +76,3 @@ Redis and PostgreSQL are installed natively but systemd is unavailable, so start
   init finishes (well before full readiness). With no reader running, `/status` `ready` stays
   `false` (it compares the reader head block to the chain head), but the indexer's own
   `:8200/status` flips to `{"ready":true}` once catch-up completes.
-- `pnpm lint` reports pre-existing Biome formatting violations in `packages/api-contracts`;
-  this is a repo code-style issue, not an environment problem.

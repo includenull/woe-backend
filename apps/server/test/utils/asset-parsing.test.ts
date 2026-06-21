@@ -5,14 +5,14 @@ describe("parseTokenRef", () => {
   it("handles SYMBOL_contract values", () => {
     expect(parseTokenRef("WAX_eosio.token")).toEqual({
       ticker: "WAX",
-      contract: "eosio.token"
+      contract: "eosio.token",
     });
   });
 
   it("trims token reference parts", () => {
     expect(parseTokenRef(" WAX _ eosio.token ")).toEqual({
       ticker: "WAX",
-      contract: "eosio.token"
+      contract: "eosio.token",
     });
   });
 });

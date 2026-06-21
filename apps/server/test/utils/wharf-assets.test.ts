@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { getAssetAmount, getAssetCode, getAssetPrecision } from "../../utils/wharfAssets.js";
+import {
+  getAssetAmount,
+  getAssetCode,
+  getAssetPrecision,
+} from "../../utils/wharfAssets.js";
 
 describe("wharf asset helpers", () => {
   it("parses positive assets", () => {

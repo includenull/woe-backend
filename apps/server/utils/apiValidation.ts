@@ -8,7 +8,9 @@ export interface ValidationResult {
   error?: string;
 }
 
-export type ParseResult<T> = { valid: true; value: T } | { valid: false; error: string };
+export type ParseResult<T> =
+  | { valid: true; value: T }
+  | { valid: false; error: string };
 
 const hasParams = (query: QueryParams, params: string[]) =>
   params.every((param) => Object.prototype.hasOwnProperty.call(query, param));
@@ -29,7 +31,7 @@ export const candleQueryParams = [
   "is_reversed",
   "startAt",
   "endAt",
-  "countBack"
+  "countBack",
 ] as const;
 
 export const swapRouteQueryParams = [
@@ -40,7 +42,7 @@ export const swapRouteQueryParams = [
   "receiver",
   "split_max_routes",
   "filter_exchange",
-  "filter_type"
+  "filter_type",
 ] as const;
 
 export function validateCandlesQuery(query: QueryParams): ValidationResult {
@@ -51,9 +53,12 @@ export function validateCandlesQuery(query: QueryParams): ValidationResult {
   return { valid: true };
 }
 
-const toStringValue = (value: QueryValue) => (Array.isArray(value) ? null : value);
+const toStringValue = (value: QueryValue) =>
+  Array.isArray(value) ? null : value;
 
-export function parseCandlesQuery(query: QueryParams): ParseResult<CandleQuery> {
+export function parseCandlesQuery(
+  query: QueryParams,
+): ParseResult<CandleQuery> {
   const validation = validateCandlesQuery(query);
   if (!validation.valid) {
     return { valid: false, error: validation.error ?? "Invalid params" };
@@ -95,8 +100,8 @@ export function parseCandlesQuery(query: QueryParams): ParseResult<CandleQuery> 
       is_reversed: query.is_reversed === "true",
       startAt,
       endAt,
-      countBack
-    }
+      countBack,
+    },
   };
 }
 

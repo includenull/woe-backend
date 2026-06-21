@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { getMissingRequiredConfig, parseOptionalStartBlock, validateRequiredConfig } from "../../config.js";
+import {
+  getMissingRequiredConfig,
+  parseOptionalStartBlock,
+  validateRequiredConfig,
+} from "../../config.js";
 
 const validConfig = {
   rpc_endpoints: ["http://localhost:8888"],
@@ -11,9 +15,9 @@ const validConfig = {
       port: "5432",
       user: "swaplog",
       password: "swaplog",
-      database: "swaplog"
-    }
-  }
+      database: "swaplog",
+    },
+  },
 };
 
 describe("required server config", () => {
@@ -33,9 +37,9 @@ describe("required server config", () => {
           port: undefined,
           user: null,
           password: "",
-          database: undefined
-        }
-      }
+          database: undefined,
+        },
+      },
     });
 
     expect(missing).toEqual([
@@ -46,13 +50,15 @@ describe("required server config", () => {
       "knexConfig.connection.port (set POSTGRESQL_PORT)",
       "knexConfig.connection.user (set POSTGRESQL_USER)",
       "knexConfig.connection.password (set POSTGRESQL_PASSWORD)",
-      "knexConfig.connection.database (set POSTGRESQL_DATABASE)"
+      "knexConfig.connection.database (set POSTGRESQL_DATABASE)",
     ]);
   });
 
   it("throws a fail-fast startup error", () => {
-    expect(() => validateRequiredConfig({ ...validConfig, waxnode_endpoint: "" })).toThrow(
-      "Missing required server configuration: waxnode_endpoint (set WAXNODE_ENDPOINT)"
+    expect(() =>
+      validateRequiredConfig({ ...validConfig, waxnode_endpoint: "" }),
+    ).toThrow(
+      "Missing required server configuration: waxnode_endpoint (set WAXNODE_ENDPOINT)",
     );
   });
 

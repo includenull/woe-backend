@@ -11,7 +11,7 @@ const baseRow = {
   pair_id: "1",
   block_num: 123,
   global_sequence: 456,
-  trx_time: "2024-01-02T03:04:05.000"
+  trx_time: "2024-01-02T03:04:05.000",
 };
 
 describe("row asset parsing", () => {
@@ -22,7 +22,7 @@ describe("row asset parsing", () => {
       quantity_in: "1.2345 WAX",
       quantity_out: "2.00000000 USDT",
       reserveA: "10.0000 WAX",
-      reserveB: "20.00000000 USDT"
+      reserveB: "20.00000000 USDT",
     });
 
     expect(row.amount_in).toBe(1.2345);
@@ -44,7 +44,7 @@ describe("row asset parsing", () => {
       liquidity: "100",
       tick: 1,
       reserveA: "10.0000 WAX",
-      reserveB: "20.00000000 USDT"
+      reserveB: "20.00000000 USDT",
     });
 
     expect(row.amountA).toBe(1.2345);
@@ -60,7 +60,7 @@ describe("row asset parsing", () => {
       ...baseRow,
       actname: "liquiditylog",
       extAssetA: { quantity: "10.0000 WAX", contract: "eosio.token" },
-      extAssetB: { quantity: "20.00000000 USDT", contract: "usdt.alcor" }
+      extAssetB: { quantity: "20.00000000 USDT", contract: "usdt.alcor" },
     });
 
     expect(row.amount_reserveA).toBe(10);

@@ -8,14 +8,14 @@ const validQuery = {
   is_reversed: "false",
   startAt: "1000",
   endAt: "2000",
-  countBack: "300"
+  countBack: "300",
 };
 
 describe("candle query validation", () => {
   it("rejects missing required query params", () => {
     expect(parseCandlesQuery({ duration: "1m" })).toEqual({
       valid: false,
-      error: "Missing params!"
+      error: "Missing params!",
     });
   });
 
@@ -29,22 +29,22 @@ describe("candle query validation", () => {
         is_reversed: false,
         startAt: 1000,
         endAt: 2000,
-        countBack: 300
-      }
+        countBack: 300,
+      },
     });
   });
 
   it("rejects invalid is_reversed values", () => {
     expect(parseCandlesQuery({ ...validQuery, is_reversed: "yes" })).toEqual({
       valid: false,
-      error: "is_reversed must be true or false"
+      error: "is_reversed must be true or false",
     });
   });
 
   it("rejects invalid numeric values", () => {
     expect(parseCandlesQuery({ ...validQuery, countBack: "many" })).toEqual({
       valid: false,
-      error: "countBack must be a valid number"
+      error: "countBack must be a valid number",
     });
   });
 });

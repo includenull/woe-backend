@@ -2,7 +2,7 @@ FROM node:24-bookworm-slim
 RUN corepack enable
 WORKDIR /workspace
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json biome.json ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json eslint.config.mjs .prettierrc.json .prettierignore ./
 COPY apps/server/package.json apps/server/package.json
 COPY apps/web/package.json apps/web/package.json
 COPY packages/antelope-ship-reader/package.json packages/antelope-ship-reader/package.json

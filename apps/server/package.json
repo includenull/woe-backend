@@ -7,7 +7,6 @@
   "scripts": {
     "build": "tsc -p tsconfig.json --noEmit",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "lint": "biome check .",
     "test": "vitest run",
     "start_deamon": "node --import tsx --max-old-space-size=2048 deamon.js",
     "start_deamon_bigmem": "node --import tsx --max-old-space-size=4096 deamon.js",
@@ -44,16 +43,12 @@
     "tsx": "4.22.4"
   },
   "devDependencies": {
-    "@blockmatic/eslint-config-base": "2.0.0",
-    "@blockmatic/prettier-config": "2.1.0",
     "@blockmatic/tsconfig": "2.0.0",
     "@types/node": "25.9.4",
     "all-contributors-cli": "6.26.1",
     "denoify": "1.6.17",
-    "eslint": "7",
     "husky": "7.0.4",
     "lint-staged": "11.2.6",
-    "prettier": "2.8.8",
     "rimraf": "^3.0.2",
     "ts-node-dev": "1.1.8",
     "typescript": "6.0.3",

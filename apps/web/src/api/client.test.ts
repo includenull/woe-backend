@@ -8,18 +8,20 @@ describe("fetchStatus", () => {
       ready: true,
       services: {},
       reader: { block_num: "123" },
-      rpc_info: null
+      rpc_info: null,
     };
 
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue({
         ok: true,
-        json: async () => payload
-      })
+        json: async () => payload,
+      }),
     );
 
-    await expect(fetchStatus("http://localhost:8000")).resolves.toEqual(payload);
+    await expect(fetchStatus("http://localhost:8000")).resolves.toEqual(
+      payload,
+    );
     expect(fetch).toHaveBeenCalledWith("http://localhost:8000/status");
   });
 });
