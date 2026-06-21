@@ -1,6 +1,7 @@
 import { createClient } from 'redis'
 
 import AppConfig from '../../config.js'
+import logger from '@utils/logger.js';
 
 class RedisConnector {
   constructor() {
@@ -14,11 +15,11 @@ class RedisConnector {
 
     await this.clients[connectionName].connect()
     this.clients[connectionName].on('connect', function() {
-      console.log('Redis connected!');
+      logger.info('Redis connected!');
       //this.clients[connectionName].FLUSHALL()
     });
 
-    this.clients[connectionName].on('error', (err) => console.log('Redis Client Error', err));
+    this.clients[connectionName].on('error', (err) => logger.error({ err: err }, 'Redis Client Error'));
   }
 
 }

@@ -307,14 +307,9 @@ export default class SwapRoutes {
       searchOutput.inputs = searchOutput.inputs.map(i => 1*i.toFixed(this.token_in.symbol.precision))
       const total = 1* searchOutput.inputs.reduce((total, v) => total += v, 0).toFixed(this.token_in.symbol.precision)
       const expectedTotal = 1*this.bestRoutes[0].in
-      /*console.log(
-        searchOutput.inputs,
-        total,
-        expectedTotal
-      )*/
+      
 
       if(total > expectedTotal) {
-        //console.log('expectedTotal lower than total, must lower inputs')
         // Find index of lowest value above 0
         let minValue = Number.POSITIVE_INFINITY;
         let minIndex = -1;
@@ -330,7 +325,6 @@ export default class SwapRoutes {
         searchOutput.inputs[minIndex] = 1*searchOutput.inputs[minIndex].toFixed(this.token_in.symbol.precision)
       }
       else if(total < expectedTotal) {
-        //console.log('expectedTotal lower than total, must increase inputs')
         // Find index of max value
         let maxValue = Number.NEGATIVE_INFINITY;
         let maxIndex = -1;
@@ -424,7 +418,6 @@ export default class SwapRoutes {
     viewRoutes = bestRoutes.concat(splitRoutes)
       .filter(vr => (!this.filterType.length || this.filterType.indexOf(vr.type) !== -1))
       .sort((a, b) => {
-        //console.log(a.out, b.out)
         if((b.out === a.out) && ((b.type === 'split' && a.type !== 'split') || (a.type === 'split' && b.type !== 'split')) )
           return (a.type !== 'split') ? -1 : 1
         else
@@ -537,7 +530,6 @@ export default class SwapRoutes {
     const selectedRoutes = uniqueSourceRoutes.slice(0, this.numberOfDistinctBRSplit).map((route) => route.index);
 
     // Log the selected routes.
-    // console.log(selectedRoutes);
 
     return selectedRoutes;
   }
@@ -682,9 +674,7 @@ export default class SwapRoutes {
         if(poolV3 !== null) {
           // if isReverse
           if(routeEl[1]) {
-            //console.log(poolV3, 'before reverse')
             poolV3 = PoolV3.reversePool(poolV3) // warning only reverse token without tick/sqrtPrice
-            //console.log(poolV3, 'after reverse')
           }
 
           srcs.srcedPath.push({type: 'poolsV3', index: srcs.poolsV3.length})

@@ -40,7 +40,6 @@ export default class LogpoolTable extends Table {
 				    OWNER to swaplog;
 		`;
 
-
 		return await this.createQuery(query)
 	}
 }

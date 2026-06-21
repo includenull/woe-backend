@@ -1,3 +1,5 @@
+import logger from "./logger.js";
+
 const forceStrTwoDigit = (digit) => {
   digit = "" + digit;
   return digit.length > 1 ? digit : "0" + digit;
@@ -142,7 +144,7 @@ export const consoleSwapShort = (swap) => {
     d.getUTCDate() +
     " " +
     hours;
-  console.log(
+  logger.info(
     "[mode:" +
       swap.mode +
       "][block:" +
@@ -177,7 +179,7 @@ export const consoleLiquidityShort = (position) => {
     d.getUTCDate() +
     " " +
     hours;
-  console.log(
+  logger.info(
     "[block:" +
       position.created_at_block +
       "][time:" +

@@ -14,6 +14,7 @@ import AppConfig from '../../config.js'
 
 // Cache same route
 import getRedis from '../Connectors/RedisConnector.js'
+import logger from '@utils/logger.js';
 
 class RouteMap {
 	constructor(getRpcIndexer) {
@@ -36,7 +37,6 @@ class RouteMap {
 		await this.generateTokenMap()
 		this.notTradeableTokens = await Tokens.getTokens({ minimalData: true})
 		this.notTradeableTokens = this.notTradeableTokens.filter(t => t.is_tradeable === false)
-		//console.log('notTradeableTokens', this.notTradeableTokens)
 	}
 
 	containsNoswapTokens(swap_source) {
@@ -221,7 +221,6 @@ class RouteMap {
     	sources_update_time = 0;
 
 		if(routes !== null && AppConfig.enableRouteMapCache && Number(cache_time) > Number(sources_update_time)) {
-			//console.log('return routes from cache')
 			routes = JSON.parse(routes)
 			this.routes = routes
 			//this.generateRoutePoolMap()
@@ -229,7 +228,6 @@ class RouteMap {
 			return routes
 		}
 
-		//console.log('return routes from computing')
 		try {
 			routes = await this.computeAndGetRoutes(tokenIn, tokenOut)
 			this.routes = routes
@@ -238,8 +236,8 @@ class RouteMap {
 			return routes
 		}
 		catch(e) {
-			console.error('ERROR COMPUTING ROUTES');
-			console.error(e)
+			logger.error('ERROR COMPUTING ROUTES');
+			logger.error(e)
 			return []
 		}
 	}
@@ -397,7 +395,6 @@ class RouteMap {
 		  NX: false
 		});
   }
-
 
 }
 

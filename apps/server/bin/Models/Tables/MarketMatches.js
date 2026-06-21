@@ -55,7 +55,6 @@ export default class MarketMatchesTable extends Table {
 				    OWNER to swaplog;
 		`;
 
-
 		return await this.createQuery(query)
 	}
 }

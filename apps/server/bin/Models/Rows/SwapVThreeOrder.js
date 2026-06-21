@@ -2,6 +2,7 @@ import { getAssetAmount, getAssetCode, getAssetPrecision } from '../../../utils/
 import {parseDateFromSmartcontract} from '../../../utils/utils.js'
 import getDb from '../../Connectors/DbPGConnector.js'
 import getRedis from '../../Connectors/RedisConnector.js'
+import logger from '@utils/logger.js';
 
 class SwapVThreeOrderRow {
 	constructor({
@@ -74,7 +75,7 @@ class SwapVThreeOrderRow {
 			).del()
   	}
   	catch(err) {
-  		console.log('Failed to remove rows above block', err)
+  		logger.error({ err: err }, 'Failed to remove rows above block')
   	}
   }
 
@@ -89,7 +90,7 @@ class SwapVThreeOrderRow {
 	  	});
   	}
   	catch(err) {
-  		console.log('failed to set rows to history', err)
+  		logger.error({ err: err }, 'failed to set rows to history')
   	}
   }
 
@@ -204,7 +205,7 @@ class SwapVThreeOrderRow {
 	    return await query;
 	  } catch (error) {
 	    // Handle any errors
-	    console.error(error);
+	    logger.error(error);
 	    //throw error;
 	  }
   }
@@ -261,19 +262,19 @@ class SwapVThreeOrderRow {
 		           ++totalUpd
 						}
 						catch(e) {
-							console.log('HistoryReader updateSwapV3 error')
-							console.log(e)
+							logger.error('HistoryReader updateSwapV3 error')
+							logger.error(e)
 						}
 					}
 		    } else {
-					console.log('HistoryReader saveSwapV3 error')
-					console.log(e)
+					logger.error('HistoryReader saveSwapV3 error')
+					logger.error(e)
 		    }
 			}
 		}
-    console.log('New swapsV3 saved', totalIns)
-    console.log('SwapsV3 archived', totalUpd)
-    console.log('Already swapsV3 received', swaps.length-totalIns-totalUpd)
+    logger.info({ totalIns }, 'New swapsV3 saved')
+    logger.info({ totalUpd }, 'SwapsV3 archived')
+    logger.info({ data: swaps.length-totalIns-totalUpd }, 'Already swapsV3 received')
 	} 
 }
 

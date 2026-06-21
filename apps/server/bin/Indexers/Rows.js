@@ -16,6 +16,7 @@ import OrderbooksSubIndexer from './Sub/Orderbooks.js'
 import AlcorTicksSubIndexer from './Sub/AlcorTicks.js'
 import AlcorPositionsSubIndexer from './Sub/AlcorPositions.js'
 import BagzregistrySubIndexer from '@indexers/Sub/Bagzregistry.js';
+import logger from '@utils/logger.js';
 
 export default class RowsIndexer {
 	constructor(getRpcIndexer) {
@@ -81,17 +82,15 @@ export default class RowsIndexer {
 		const rowIndex = this.findRowIndex(row)
 		
 		if(rowIndex === -1) {
-			//console.log(row.code+' '+row.table+' '+row.scope, 'addRow')
 			this.rows[row.code][row.table][row.scope].push(row.value)
 		}
 		else {
-			//console.log(row.code+' '+row.table+' '+row.scope, 'editRow')
 			this.rows[row.code][row.table][row.scope][rowIndex] = row.value
 		}
 
 		// Debug rmx wax market on alcor market
 		/* if(row.code === 'alcordexmain' && row.scope == 383) {
-			console.log(this.rows[row.code][row.table][row.scope])
+			logger.info(this.rows[row.code][row.table][row.scope])
 		} */
 	}
 
@@ -99,17 +98,16 @@ export default class RowsIndexer {
 		const rowIndex = this.findRowIndex(row)
 
 		if(rowIndex === -1) {
-			console.log('warning row code:'+row.code+' table:'+row.table+' scope:'+row.scope+' to delete doesn\'t exists doing another init for this code table scope');
+			logger.warn('warning row code:'+row.code+' table:'+row.table+' scope:'+row.scope+' to delete doesn\'t exists doing another init for this code table scope');
 			this.initCodeTableScope(row.code, row.table, row.scope)
 		}
 		else {
 			this.rows[row.code][row.table][row.scope].splice(rowIndex, 1)
-			//console.log(row.code+' '+row.table+' '+row.scope, 'deleteRow')
 		}
 
 		// Debug rmx wax market on alcor market
 		/* if(row.code === 'alcordexmain' && row.scope == 383) {
-			console.log(this.rows[row.code][row.table][row.scope])
+			logger.info(this.rows[row.code][row.table][row.scope])
 		} */
 	}
 
@@ -148,9 +146,6 @@ export default class RowsIndexer {
 	getRowsForMappedField(field, code_filter, table_filter) {
 		const ret = {}
 
-		//console.log(field)
-		//console.dir(this.rows_map[field], { depth: null })
-
 		if(this.rows_map[field] === undefined)
 			return;
 
@@ -183,7 +178,7 @@ export default class RowsIndexer {
 		await this.connectReaderrows();
 
 		for(const subIndexer of Object.keys(this.indexers) ) {
-			console.log(subIndexer + ' subIndexer first init start')
+			logger.info(subIndexer + ' subIndexer first init start')
 			const indexerRows = await this.indexers[subIndexer].fetchRows()
 
 			for(const code of Object.keys(indexerRows)) {
@@ -204,7 +199,7 @@ export default class RowsIndexer {
 					} // for scope
 				} // for table
 			} // for code
-			console.log(subIndexer + ' subIndexer first init done')
+			logger.info(subIndexer + ' subIndexer first init done')
 		}
 	}
 
@@ -224,19 +219,15 @@ export default class RowsIndexer {
 		if([undefined, null].includes(field))
 			return false;
 
-		//console.log('Mapping field '+field+' for '+code+':'+table+':'+scope)
-
 		// Reset previous mapping
 		let updatedRowsMap = { ...this.rows_map }; // Create a copy to modify
 		if(this.rows_map_map[code+'_'+table+'_'+scope] !== undefined) {
 			for(const mapped_value of this.rows_map_map[code+'_'+table+'_'+scope]) {
-				//console.log(mapped_value)
-				//console.dir(this.rows_map[mapped_value], { depth: null })
 				try {
 					delete updatedRowsMap[mapped_value][code][table][scope];
 				}
 				catch(e) {
-					console.log(e)
+					logger.error(e)
 				}
 
 				try {
@@ -244,7 +235,7 @@ export default class RowsIndexer {
 			      delete updatedRowsMap[mapped_value][code][table];
 				}
 				catch(e) {
-					console.log(e)
+					logger.error(e)
 				}
 
 		    try {
@@ -252,7 +243,7 @@ export default class RowsIndexer {
 			      delete updatedRowsMap[mapped_value][code];
 		    }
 		    catch(e) {
-		    	console.log(e)
+		    	logger.error(e)
 		    }
 
 		    try {
@@ -260,7 +251,7 @@ export default class RowsIndexer {
 			      delete updatedRowsMap[mapped_value];
 		    }
 		    catch(e) {
-		    	console.log(e)
+		    	logger.error(e)
 		    }
 		  }
 
@@ -268,7 +259,7 @@ export default class RowsIndexer {
 		  	delete this.rows_map_map[code + '_' + table + '_' + scope];
 		  }
 		  catch(e) {
-		  	console.log(e)
+		  	logger.error(e)
 		  }
 		}
 
@@ -318,7 +309,6 @@ export default class RowsIndexer {
 	}
 
 	async initCodeTableScope(code, table, scope) {
-		//console.log(code+' '+table+' '+scope, 'initCodeTableScope')
 		this.rows[code][table][scope] = null
 		this.rows[code][table][scope] = await this.subIndexer.fetchCodeTableScope(code, table, scope)
 
@@ -331,7 +321,7 @@ export default class RowsIndexer {
 	}
 
 	async connectReaderrows() {
-		console.log('connectReaderrows')
+		logger.info('connectReaderrows')
 		// Extract qstreams to listen to
 		let qstreams = []
 		for(const subIndexer of Object.keys(this.indexers) )
@@ -393,7 +383,7 @@ export default class RowsIndexer {
 
 		// If rows are not present for scope
 		if(!(this.rows[row.code][row.table][row.scope] !== undefined && null !== this.rows[row.code][row.table][row.scope])) {
-			console.log('warning rows not present onUpdateReaderrows', row)
+			logger.warn({ row }, 'warning rows not present onUpdateReaderrows')
 			this.initCodeTableScope(row.code, row.table, row.scope)
 			return;
 		}

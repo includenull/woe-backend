@@ -1,4 +1,5 @@
 import getDb from '../../Connectors/DbPGConnector.js'
+import logger from '@utils/logger.js';
 
 export class KlinesSync {
 	constructor({
@@ -66,7 +67,6 @@ export class KlinesSyncRows {
 	async update({src, pair_id, updated_at_time, last_trade_time, last_trade_block}, force_update = false) {
 		const db = await getDb()
 		const rowIndex = this.findRowIndex(src, pair_id)
-		//console.log({src, pair_id, updated_at_time, last_trade_time}, rowIndex)
 
 		if(rowIndex !== -1) {
 			const row = this.rows[rowIndex]
@@ -89,7 +89,7 @@ export class KlinesSyncRows {
 		      this.rows[rowIndex].last_trade_block = last_trade_block
 				}
 				catch(e) {
-					console.log(e)
+					logger.error(e)
 					process.exit(1)
 				}
 			} // else nothing to update
@@ -112,7 +112,7 @@ export class KlinesSyncRows {
 				}))
 			}
 			catch(e) {
-				console.log("Error while inserting klinesSync", e)
+				logger.error({ err: e }, "Error while inserting klinesSync")
 			}
 		}
 	}

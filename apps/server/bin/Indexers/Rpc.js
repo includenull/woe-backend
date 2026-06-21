@@ -6,6 +6,7 @@ import PoolSpecialMap from '@models/PoolSpecialMap.js';
 import MarketMap from '../Models/MarketMap.js'
 import PoolV3Map from '../Models/PoolV3Map.js'
 import Tokens from '../Models/Tokens.js'
+import logger from '@utils/logger.js';
 
 function doesSourceContainsTokens(source, tokenA, tokenB) {
 	return (
@@ -64,7 +65,7 @@ class RpcIndexer {
 		while(true) {
 			if(!firstRun) {
 				await this.initTokens()
-				console.log('Tokens list refreshed')
+				logger.info('Tokens list refreshed')
 			}
 
 			firstRun = false

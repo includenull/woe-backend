@@ -7,6 +7,22 @@ import { KlineRows } from './Models/Rows/Kline.js';
 import getRedis from './Connectors/RedisConnector.js'
 
 import {delay} from '../utils/utils.js';
+import logger from '@utils/logger.js';
+
+const maskIpAddress = (ip) => {
+  if (!ip || typeof ip !== 'string') return 'unknown';
+
+  const normalized = ip.replace(/^::ffff:/, '');
+  const parts = normalized.split('.');
+  if (parts.length === 4) return `${parts[0]}.${parts[1]}.${parts[2]}.*`;
+
+  if (normalized.includes(':')) {
+    const segments = normalized.split(':').filter(Boolean);
+    return `${segments.slice(0, 3).join(':')}:***`;
+  }
+
+  return 'masked';
+};
 
 const SERVER_PORT = 8010;
 
@@ -80,7 +96,7 @@ export default class SocketioServer {
       });
     } catch (err) {
       // If an error occurs, log it and wait 5 seconds before trying again
-      console.error(`Error consuming messages from queue ${marketQueueName}:`, err);
+      logger.error({ err: err }, `Error consuming messages from queue ${marketQueueName}:`);
     }
   }
 
@@ -145,7 +161,7 @@ export default class SocketioServer {
         await this.rateLimiter.consume(remoteAddress, 5)
       }
       catch(rateLimiterRes) {
-        console.log('remoteAddress '+remoteAddress+' force disconnect RATE_LIMITED')
+        logger.info({ remoteAddress: maskIpAddress(remoteAddress) }, 'force disconnect RATE_LIMITED')
         await socket.disconnect();
         return;
       }
@@ -156,7 +172,6 @@ export default class SocketioServer {
         }
         catch(rateLimiterRes) {
           await this.rateLimiter.penalty(remoteAddress, 601) // 1 minute
-          //console.log('remoteAddress '+remoteAddress+' RATE_LIMITED')
           return next(new Error('429 - Too Many Requests'));
         }
         return next(new Error('SESSION_TOKEN&&SESSION_UUID:REQUIRED'));
@@ -170,7 +185,6 @@ export default class SocketioServer {
         }
         catch(rateLimiterRes) {
           await this.rateLimiter.penalty(remoteAddress, 601) // 1 minute
-          //console.log('remoteAddress '+remoteAddress+' RATE_LIMITED')
           return next(new Error('429 - Too Many Requests'));
         }
         return next(new Error('SESSION_TOKEN&&SESSION_UUID:INVALID'));
@@ -191,14 +205,13 @@ export default class SocketioServer {
 
       // Check if the user has reached the maximum allowed connections
       if(this.getUserConnectionCount(userId) >= this.maxConnectionsPerUser) {
-        console.log('user '+userId+' reached max number of connections')
+        logger.info({ userId: maskIpAddress(userId) }, 'reached max number of connections')
         socket.disconnect();
         return;
       }
 
       // Increment the user's connection count
       this.incrementUserConnectionCount(userId);
-      // console.log(userId, this.getUserConnectionCount(userId), this.activeConnections)
 
       socket.on('subscribe', ({roomType, params}) => {
         if(roomType === 'marketMatches') {
@@ -251,7 +264,7 @@ export default class SocketioServer {
     });
 
     this.server.listen(SERVER_PORT, async () => {
-      console.log('Socket.io server listening on port '+SERVER_PORT);
+      logger.info('Socket.io server listening on port '+SERVER_PORT);
       this.startPushMarketMatches()
       this.startPushKlines()
       this.startPushOrderbooksDelta()

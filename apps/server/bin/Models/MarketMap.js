@@ -9,6 +9,7 @@ import Token from './Token.js'
 
 import AppConfig from '../../config.js'
 import BanlistLoader from '@models/BanlistLoader.js';
+import logger from '@utils/logger.js';
 
 class MarketMapException extends Error {
 	constructor({data, code}) {
@@ -112,7 +113,6 @@ export default class MarketMap {
 		return await this.saveRefresh(markets)
 	}
 
-
 	getMarket(src, pairid) {
 		if(this.map[src+'_'+pairid] !== undefined)
 			return this.map[src+'_'+pairid]
@@ -123,7 +123,6 @@ export default class MarketMap {
 	getAllMarkets() {
 		let markets = []
 
-		//console.log(this.map)
 		const allMarketsHashes = Object.keys(this.map)
 
 		for(let i = 0; i < allMarketsHashes.length; ++i)
@@ -173,7 +172,7 @@ export default class MarketMap {
 			return true
 		}
 		catch(e) {
-			console.log(e)
+			logger.error(e)
 			return false
 		}
 	}
@@ -214,7 +213,7 @@ export default class MarketMap {
 	insertMarketWithRow(row) {
 		const market = MarketMap.createMarketFromRow(row)
 		this.saveMarket(market)
-		console.log('insertMarketWithRow', market)
+		logger.info({ market }, 'insertMarketWithRow')
 	}
 
 	updateMarketWithRow(oldMarket, row) {
@@ -224,12 +223,12 @@ export default class MarketMap {
 		market.lastPrice = oldMarket.lastPrice
 
 		this.saveMarket(market)
-		console.log('updateMarketWithRow', market)
+		logger.info({ market }, 'updateMarketWithRow')
 	}
 
 	deleteMarketWithRow(row) {
 		const market = MarketMap.createMarketFromRow(row)
-		console.log('deleteMarketWithRow', row)
+		logger.info({ row }, 'deleteMarketWithRow')
 		this.removeMarket(market)
 	}
 
@@ -240,15 +239,14 @@ export default class MarketMap {
 		marketUpdate.lastPrice = data.unit_price
 		try {
 			this.updateMarket(splittedSrc[0]+'market', data.market_id, marketUpdate)
-			//console.log('Market '+splittedSrc[0]+'market_'+data.market_id+' updated')
 		}
 		catch(e) {
 			if(e.code !== undefined) {
 				if(e.code === 'missing_market')
-					console.log('Market '+e.data.market_id+' from '+e.data.src+' not indexed yet')
+					logger.info('Market '+e.data.market_id+' from '+e.data.src+' not indexed yet')
 			}
 			else {
-				console.log('Unhandled error', e)
+				logger.error({ err: e }, 'Unhandled error')
 			}
 		}
 	}

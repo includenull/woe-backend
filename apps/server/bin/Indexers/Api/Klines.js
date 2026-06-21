@@ -1,4 +1,5 @@
 import express from 'express';
+import logger from '@utils/logger.js';
 
 export default class ApiKlines {
 	constructor() {
@@ -24,7 +25,7 @@ export default class ApiKlines {
 		});
 
 		this.api.listen(8210, () => {
-			console.log('Klines API listening on port 8210!')
+			logger.info('Klines API listening on port 8210!')
 		});
 	}
 }

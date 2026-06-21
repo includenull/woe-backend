@@ -19,6 +19,7 @@ import {delay} from './utils/utils.js';
 import { parseCandlesQuery, validateSwapRoutesQuery, swapRouteQueryParams } from './utils/apiValidation.js';
 import { fetchIndexerApi, fetchKlinesIndexerApi, fetchLastStatsApi } from '@class/apiFetcher.js';
 import { getInfo } from '@connectors/RpcConnector.js';
+import logger from '@utils/logger.js';
 
 const resGzipJson = (json, res) => {
 	const jsonData = JSON.stringify(json);
@@ -26,7 +27,7 @@ const resGzipJson = (json, res) => {
   // Compress the JSON data using gzip
   zlib.gzip(jsonData, (err, compressedData) => {
     if (err) {
-      console.error(err);
+      logger.error(err);
       res.status(500).send('Internal Server Error');
       return;
     }
@@ -180,10 +181,6 @@ app.get('/candles', async(req, res, next) => {
 		return false;
 	}
 
-	/*console.log(req.query)
-	console.log('startAt', new Date(1*req.query.startAt))
-	console.log('endAt', new Date(1*req.query.endAt))*/
-
 	// Fetch candles
 	let candles = []
 	try {
@@ -195,7 +192,6 @@ app.get('/candles', async(req, res, next) => {
 			endAt: candleQuery.value.endAt,
 			//limit: req.query.countBack // No limit -> In the unlikely case that the number of bars in the requested range is larger than the countBack value, then you should return all the bars in that range instead of truncating it to the countBack length.
 		})
-		//console.log('initial candles length', candles.length)
 	}
 	catch(e) {
 		res.status(e.code).json({error: e.message})
@@ -322,7 +318,6 @@ app.post('/trades', bodyParser.json(), async (req, res, next) => {
   resGzipJson(trades, res);
 });
 
-
 /** 
  * HTTPS get params :
  * min_global_sequence
@@ -417,5 +412,5 @@ app.post('/socket-session-token', bodyParser.json(), async (req, res) => {
 });
 
 app.listen(8000, () => {
-	console.log('Api listening on port 8000!')
+	logger.info('Api listening on port 8000!')
 });

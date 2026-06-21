@@ -1,3 +1,4 @@
+import logger from '@utils/logger.js';
 export default class BackgroundWorker {
 	constructor(name, maxWorker, callback) {
 		this.name = name
@@ -6,7 +7,7 @@ export default class BackgroundWorker {
 		this.stopped = false
 	}
 	async start() {
-		console.log('Starting '+this.maxWorker+' '+this.name);
+		logger.info('Starting '+this.maxWorker+' '+this.name);
 		this.stopped = false
 		for(let i = 0; i < this.maxWorker; ++i)
 			this.run(this.name+i)
@@ -16,14 +17,13 @@ export default class BackgroundWorker {
 
 	async run(id) {
 		while(true && !this.stopped) {
-			//console.log('Run worker '+id)
 			await this.do(id)
 		}
 	}
 
 	async stop() {
 		this.stopped = true
-		console.log('Worker '+this.name+' stopped')
+		logger.info('Worker '+this.name+' stopped')
 	}
 
 	async do(id) {

@@ -1,6 +1,7 @@
 import { getAssetCode, getAssetPrecision } from '../../../utils/wharfAssets.js'
 import { parseDateFromSmartcontract } from '../../../utils/utils.js'
 import getDb from '../../Connectors/DbPGConnector.js'
+import logger from '@utils/logger.js';
 
 export default class LogpoolRow {
 	constructor({
@@ -92,7 +93,6 @@ export default class LogpoolRow {
 		if(codeB !== undefined && null !== codeB)
 			query = query.where({'codeB': codeB})
 
-
 		if(startAt !== undefined && null !== startAt)
    		query = query.where('updated_at_time', '>=', startAt);
 		if(endAt !== undefined && null !== endAt)
@@ -106,7 +106,7 @@ export default class LogpoolRow {
 	    return await query;
 	  } catch (error) {
 	    // Handle any errors
-	    console.error(error);
+	    logger.error(error);
 	    //throw error;
 	  }
 	}
@@ -155,18 +155,18 @@ export default class LogpoolRow {
 		           ++totalUpd
 						}
 						catch(e) {
-							console.log('Logpool updateLogs error')
-							console.log(e)
+							logger.error('Logpool updateLogs error')
+							logger.error(e)
 						}
 					}
 		    } else {
-					console.log('Logpool saveLogs error')
-					console.log(e)
+					logger.error('Logpool saveLogs error')
+					logger.error(e)
 		    }
 			}
 		}
-    console.log('New liquidity changes saved', totalIns)
-    console.log('Liquidity changes archived', totalUpd)
-    console.log('Already received', logpools.length-totalIns-totalUpd)
+    logger.info({ totalIns }, 'New liquidity changes saved')
+    logger.info({ totalUpd }, 'Liquidity changes archived')
+    logger.info({ data: logpools.length-totalIns-totalUpd }, 'Already received')
   }
 }

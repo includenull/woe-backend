@@ -5,6 +5,7 @@ import PoolV3 from './PoolV3.js'
 
 import AppConfig from '../../config.js'
 import BanlistLoader from '@models/BanlistLoader.js';
+import logger from '@utils/logger.js';
 
 export default class PoolV3Map {
 	constructor() {
@@ -15,10 +16,7 @@ export default class PoolV3Map {
 
 	async init() {
 		const pools = await AlcorPoolV3.fetchPools()
-		this.savePools(pools)
-		// console.log(this.map)
-
-		return true
+		return await this.savePools(pools)
 	}
 
   getWaxPools(contract, ticker) {
@@ -70,15 +68,15 @@ export default class PoolV3Map {
 		return pools
 	}
 
-	savePools(pools) {
+	async savePools(pools) {
 		try {
 			for(let i = 0; i < pools.length; ++i)
-				this.savePool(pools[i]);
+				await this.savePool(pools[i]);
 
 			return true
 		}
 		catch(e) {
-			console.log(e)
+			logger.error(e)
 			return false
 		}
 	}
@@ -160,22 +158,21 @@ export default class PoolV3Map {
     })
 	}
 
-	insertPoolWithRow(row) {
+	async insertPoolWithRow(row) {
 		const pool = PoolV3Map.createPoolFromRow(row)
-		this.savePool(pool)
-		console.log('insertPoolWithRow', pool)
+		await this.savePool(pool)
+		logger.info({ pool }, 'insertPoolWithRow')
 	}
 
 	updatePoolWithRow(row) {
 		const pool = PoolV3Map.createPoolFromRow(row)
 		this.updatePool(pool)
-		//console.log('updatePoolWithRow', pool)
 	}
 
 	deletePoolWithRow(row) {
 		const pool = PoolV3Map.createPoolFromRow(row)
-		this.remove(pool)
-		console.log('deletePoolWithRow', pool)
+		this.removePool(pool)
+		logger.info({ pool }, 'deletePoolWithRow')
 	}
 
 }

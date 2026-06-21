@@ -1,4 +1,5 @@
 import express from 'express';
+import logger from '@utils/logger.js';
 
 export default class ApiLastStats {
 	constructor({
@@ -68,7 +69,7 @@ export default class ApiLastStats {
 		});
 
 		this.api.listen(8220, () => {
-			console.log('Last stats Api listening on port 8220!')
+			logger.info('Last stats Api listening on port 8220!')
 		});
 	}
 }

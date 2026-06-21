@@ -6,6 +6,7 @@ import LiquidityRow from '../Models/Rows/Liquidity.js'
 import LogpoolRow from '../Models/Rows/Logpool.js'
 import SwapVThreeOrderRow from '../Models/Rows/SwapVThreeOrder.js'
 import {delay} from '../../utils/utils.js'
+import logger from '@utils/logger.js';
 
 const indexerApi = 'http://indexer:8200';
 
@@ -15,8 +16,8 @@ const fetchApi = async (path) => {
 		return response.data
 	}
 	catch(err) {
-		console.log(err)
-		console.log('Error while fetching indexer api')
+		logger.error(err)
+		logger.info('Error while fetching indexer api')
 		return ''
 	}
 }
@@ -88,7 +89,7 @@ export default class LiquidityPricesIndexer {
 	}
 
 	async start() {
-		console.log('LiquidityPricesIndexer start');
+		logger.info('LiquidityPricesIndexer start');
 		this.worker.start()
 	}
 
@@ -98,7 +99,7 @@ export default class LiquidityPricesIndexer {
 			tokenA_price: null,
 			limit: 1000
 		})
-		console.log(rows.length + ' liquidity rows with null price')
+		logger.info(rows.length + ' liquidity rows with null price')
 
 		// Loop and compute price
 		for(const row of rows) {
@@ -132,7 +133,7 @@ export default class LiquidityPricesIndexer {
 				}
 
 				if(!lastSwapRow.length) {
-					console.log('Warning no lastSwapRow found for row', row)
+					logger.info({ row }, 'Warning no lastSwapRow found for row')
 					if(this.errorCpt[row.global_sequence] === undefined)
 						this.errorCpt[row.global_sequence] = 0
 
@@ -145,7 +146,7 @@ export default class LiquidityPricesIndexer {
 				const pool = await this.apiFetcher.fetchData('/poolv3/'+row.src+'/'+row.pair_id)
 
 				if(pool === '') 
-					console.log('Warning pool '+row.src+' '+row.pair_id+' not in indexer')
+					logger.info('Warning pool '+row.src+' '+row.pair_id+' not in indexer')
 				else {
 					price = getPrice(pool, lastSwapRow)
 				}

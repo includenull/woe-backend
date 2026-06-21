@@ -3,6 +3,7 @@ import { ContractKit } from '@wharfkit/contract'
 
 import { delay } from '../../utils/utils.js'
 import AppConfig from '../../config.js'
+import logger from '@utils/logger.js';
 
 class RpcConnector {
 	constructor() {
@@ -78,11 +79,11 @@ export const getInfo = async () => {
   catch(e) {
     rpcConnector.updateLastFail(rpcUrl)
     if(e.code !== undefined) {
-      console.log('RPC '+rpcUrl+' failed with code '+e.code+' fail_cpt:'+rpcConnector.selectedRpc.fail_cpt)
+      logger.warn('RPC '+rpcUrl+' failed with code '+e.code+' fail_cpt:'+rpcConnector.selectedRpc.fail_cpt)
     }
     else {
-      console.log(e)
-      console.log('RPC '+rpcUrl+' failed fail_cpt:'+rpcConnector.selectedRpc.fail_cpt)
+      logger.error(e)
+      logger.warn('RPC '+rpcUrl+' failed fail_cpt:'+rpcConnector.selectedRpc.fail_cpt)
     }
     // Add random possibility to multiply delay x2 so if there is many requests error they get delayed between them
     await delay(AppConfig.rpc_delay_error + Math.random() * AppConfig.rpc_delay_error)
@@ -120,11 +121,11 @@ export const fetchTable = async(contract, scope, table, params = {}, prevRows = 
   catch(e) {
     rpcConnector.updateLastFail(rpcUrl)
     if(e.code !== undefined) {
-      console.log('RPC '+rpcUrl+' failed with code '+e.code+' fail_cpt:'+rpcConnector.selectedRpc.fail_cpt)
+      logger.warn('RPC '+rpcUrl+' failed with code '+e.code+' fail_cpt:'+rpcConnector.selectedRpc.fail_cpt)
     }
     else {
-      console.log(e)
-      console.log('RPC '+rpcUrl+' failed fail_cpt:'+rpcConnector.selectedRpc.fail_cpt)
+      logger.error(e)
+      logger.warn('RPC '+rpcUrl+' failed fail_cpt:'+rpcConnector.selectedRpc.fail_cpt)
     }
     // Add random possibility to multiply delay x2 so if there is many requests error they get delayed between them
     await delay(AppConfig.rpc_delay_error + Math.random() * AppConfig.rpc_delay_error)
@@ -160,11 +161,11 @@ export const fetchFullTable = async(contract, scope, table, objectify = false) =
   catch(e) {
     rpcConnector.updateLastFail(rpcUrl)
     if(e.code !== undefined) {
-      console.log('RPC '+rpcUrl+' contract:'+contract+' scope:'+scope+' table:'+table+' failed with code '+e.code+' fail_cpt:'+rpcConnector.selectedRpc.fail_cpt)
+      logger.warn('RPC '+rpcUrl+' contract:'+contract+' scope:'+scope+' table:'+table+' failed with code '+e.code+' fail_cpt:'+rpcConnector.selectedRpc.fail_cpt)
     }
     else {
-      console.log(e)
-      console.log('RPC '+rpcUrl+' contract:'+contract+' scope:'+scope+' table:'+table+' failed fail_cpt:'+rpcConnector.selectedRpc.fail_cpt)
+      logger.error(e)
+      logger.warn('RPC '+rpcUrl+' contract:'+contract+' scope:'+scope+' table:'+table+' failed fail_cpt:'+rpcConnector.selectedRpc.fail_cpt)
     }
     // Add random possibility to multiply delay x2 so if there is many requests error they get delayed between them
     await delay(AppConfig.rpc_delay_error + Math.random() * AppConfig.rpc_delay_error)

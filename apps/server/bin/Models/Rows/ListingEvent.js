@@ -1,6 +1,7 @@
 import { Asset } from "@wharfkit/antelope"
 import { parseDateFromSmartcontract } from '@root/utils/utils.js'
 import getDb from '@connectors/DbPGConnector.js'
+import logger from '@utils/logger.js';
 
 export default class ListingEventRow {
 	constructor({
@@ -46,7 +47,7 @@ export default class ListingEventRow {
 			).del()
   	}
   	catch(err) {
-  		console.log('Failed to remove listing event rows above block', err)
+  		logger.error({ err: err }, 'Failed to remove listing event rows above block')
   	}
   }
 
@@ -61,7 +62,7 @@ export default class ListingEventRow {
 	  	});
   	}
   	catch(err) {
-  		console.log('failed to set listing event rows to history', err)
+  		logger.error({ err: err }, 'failed to set listing event rows to history')
   	}
   }
 
@@ -105,19 +106,19 @@ export default class ListingEventRow {
 		           ++totalUpd
 						}
 						catch(e) {
-							console.log('listingEvents updateLogs error')
-							console.log(e)
+							logger.error('listingEvents updateLogs error')
+							logger.error(e)
 						}
 					}
 		    } else {
-					console.log('listingEvents saveLogs error')
-					console.log(e)
+					logger.error('listingEvents saveLogs error')
+					logger.error(e)
 		    }
 			}
 		}
-    console.log('New listing events saved', totalIns)
-    console.log('Listing events archived', totalUpd)
-    console.log('Already received', events.length-totalIns-totalUpd)
+    logger.info({ totalIns }, 'New listing events saved')
+    logger.info({ totalUpd }, 'Listing events archived')
+    logger.info({ data: events.length-totalIns-totalUpd }, 'Already received')
 	}
 	static async parseActionData(src, data) {
     let ret = {}
@@ -222,7 +223,6 @@ export default class ListingEventRow {
 			'updated_at_time'
 		).from('listingEvents');
 
-
 		if(min_global_sequence !== undefined && null !== min_global_sequence)
    		query = query.where('global_sequence', '>=', min_global_sequence);
    	if(max_global_sequence !== undefined && null !== max_global_sequence)
@@ -239,7 +239,7 @@ export default class ListingEventRow {
 	    return await query;
 	  } catch (error) {
 	    // Handle any errors
-	    console.error(error);
+	    logger.error(error);
 	    //throw error;
 	  }
   }

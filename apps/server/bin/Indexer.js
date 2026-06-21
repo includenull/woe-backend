@@ -7,6 +7,7 @@ import Token from './Models/Token.js'
 import DefiboxPool from './Exchanges/DefiboxPool.js'
 
 import AppConfig from '../config.js';
+import logger from '@utils/logger.js';
 
 class Indexer {
 	constructor() {
@@ -21,26 +22,26 @@ class Indexer {
 	}
 
 	async init() {
-  	console.log('Start internal api')
+  	logger.info('Start internal api')
   	await this.apiIndexer.start()
 		
-    console.log('Init pools special')
+    logger.info('Init pools special')
     await this.rpcIndexer.initPoolsSpecial()
-		console.log('Init pools')
+		logger.info('Init pools')
   	await this.rpcIndexer.initPools()
-  	console.log('Init markets')
+  	logger.info('Init markets')
   	await this.rpcIndexer.initMarkets()
-  	console.log('Init pools v3')
+  	logger.info('Init pools v3')
   	await this.rpcIndexer.initPoolsV3()
-  	console.log('Init tokens')
+  	logger.info('Init tokens')
   	await this.rpcIndexer.initTokens()
 
   	this.rpcIndexer.startRefreshTokens()
 
-  	console.log('Sub to orderbooks and pools v3 positions')
+  	logger.info('Sub to orderbooks and pools v3 positions')
   	await this.rowsIndexer.initRows(AppConfig.tables_interest.filter(ti => ti.rowsSubIndexer !== undefined))
 
-  	console.log('Set internal api status to ready')
+  	logger.info('Set internal api status to ready')
   	this.apiIndexer.setReady(true)
 	}
 
@@ -75,7 +76,7 @@ class Indexer {
 				}
 			})
 		} catch(err) {
-			console.log('Error while listening to queue '+swapQueueName, err)
+			logger.error({ err: err }, 'Error while listening to queue '+swapQueueName)
 		}
 
 		const poolV3QueueName = 'swapVThreeOrders_rows_indexer'
@@ -102,7 +103,7 @@ class Indexer {
 				}
 			})
     } catch(err) {
-    	console.log('Error while listening to queue '+poolV3QueueName, err)
+    	logger.error({ err: err }, 'Error while listening to queue '+poolV3QueueName)
     }
 
     const marketQueueName = 'marketMatches_rows_indexer'
@@ -120,7 +121,7 @@ class Indexer {
 					this.rpcIndexer.marketMap.deleteMarketWithRow(row)
 			})
     } catch(err) {
-    	console.log('Error while listening to queue '+marketQueueName, err)
+    	logger.error({ err: err }, 'Error while listening to queue '+marketQueueName)
     }
 
     const poolsSpecialQueueName = 'poolsSpecial_rows_indexer';
@@ -133,7 +134,7 @@ class Indexer {
         }
       });
     } catch(err) {
-      console.log('Error while listening to queue '+poolsSpecialQueueName, err)
+      logger.error({ err: err }, 'Error while listening to queue '+poolsSpecialQueueName)
     }
 
     const marketMatchesQueueName = 'marketMatches_insert_indexer'
@@ -149,7 +150,7 @@ class Indexer {
 				this.rpcIndexer.marketMap.updateMarketWithMatch(market, data)
 			})
     } catch(err) {
-    	console.log('Error while listening to queue '+marketMatchesQueueName, err)
+    	logger.error({ err: err }, 'Error while listening to queue '+marketMatchesQueueName)
     }
 	}
 }
