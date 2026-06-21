@@ -3,10 +3,12 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { delay } from '@utils/utils.js'
 
+const serverRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+
 export default class BanlistLoader {
   constructor(origin) {
     this.origin = origin
-    this.filePath = path.resolve('/home/node/app/banlist.js');
+    this.filePath = path.join(serverRoot, 'banlist.js');
     this.lastModifiedTime = 0;
     this.loadedContent = null;
     this.isLoading = false
