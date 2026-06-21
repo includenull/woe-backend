@@ -15,15 +15,15 @@ const fetchApi = async (url, path, attempt = 0) => {
 		}
 	}
 	catch(err) {
-		logger.info('Error while fetching api: '+url+path)
+		logger.error({ err }, 'Error while fetching api: '+url+path)
 		if(err?.cause?.code === 'UND_ERR_SOCKET') {
 			++attempt
 			if(attempt < 5) {
-				logger.info('SocketError: other side closed retrying... attempt #'+attempt)
+				logger.warn('SocketError: other side closed retrying... attempt #'+attempt)
 				return await fetchApi(url, path, attempt)
 			}
 			else
-				logger.info('SocketError: other side closed')
+				logger.error('SocketError: other side closed')
 		}
 
 		return undefined

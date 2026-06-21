@@ -378,9 +378,10 @@ class KlinesIndexer {
 
 	async listenToFork() {
 		const redis = await getRedis('klinesindexer_subscriber');
+		const queueName = 'READER_FORK_DETECTED';
 
 		try {
-			redis.subscribe('READER_FORK_DETECTED', async (block_num) => {
+			redis.subscribe(queueName, async (block_num) => {
 				block_num = Number(block_num)
 				logger.info('Fork detected at block_num '+block_num)
 				this.catchupRunning = false

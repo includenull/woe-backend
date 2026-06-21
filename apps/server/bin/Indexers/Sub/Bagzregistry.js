@@ -48,7 +48,7 @@ export default class BagzregistrySubIndexer extends SubIndexer {
     bagzregistry_accounts = JSON.parse(bagzregistry_accounts_text);
   } catch (e) {
     bagzregistry_accounts = null;
-    logger.info('failed to load bagzregistry_accounts');
+    logger.error({ err: e }, 'failed to load bagzregistry_accounts');
   			}
 
 		// bluemobwally is not bagzregistry anymore 

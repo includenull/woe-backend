@@ -173,7 +173,7 @@ export default class PoolV3Map {
 
 	deletePoolWithRow(row) {
 		const pool = PoolV3Map.createPoolFromRow(row)
-		this.remove(pool)
+		this.removePool(pool)
 		logger.info({ pool }, 'deletePoolWithRow')
 	}
 

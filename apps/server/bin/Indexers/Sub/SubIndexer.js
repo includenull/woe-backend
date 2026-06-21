@@ -50,15 +50,19 @@ export default class SubIndexer {
 
 			const tasks = []
 			for(let i = 0; i < scopes.length; ++i) {
-				tasks.push(new Promise(async (resolve) => {
+				tasks.push(new Promise((resolve, reject) => {
 					// Delay each first requests to avoid hammering the node
 					setTimeout(async () => {
-						const scope = scopes[i];
-						ret[ti.code][ti.table][scope] = {}
-						ret[ti.code][ti.table][scope].rows = await this.fetchCodeTableScope(ti.code, ti.table, scope)
-						if((i + 1) % 50 === 0 || i + 1 === scopes.length)
-							logger.info((i + 1)+' / '+scopes.length+' fetched '+ti.code+' '+ti.table)
-						resolve(true)
+						try {
+							const scope = scopes[i];
+							ret[ti.code][ti.table][scope] = {}
+							ret[ti.code][ti.table][scope].rows = await this.fetchCodeTableScope(ti.code, ti.table, scope)
+							if((i + 1) % 50 === 0 || i + 1 === scopes.length)
+								logger.info((i + 1)+' / '+scopes.length+' fetched '+ti.code+' '+ti.table)
+							resolve(true)
+						} catch (error) {
+							reject(error)
+						}
 					}, i*AppConfig.rpc_delay);
 				}));
 			}

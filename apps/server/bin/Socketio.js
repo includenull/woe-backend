@@ -9,6 +9,21 @@ import getRedis from './Connectors/RedisConnector.js'
 import {delay} from '../utils/utils.js';
 import logger from '@utils/logger.js';
 
+const maskIpAddress = (ip) => {
+  if (!ip || typeof ip !== 'string') return 'unknown';
+
+  const normalized = ip.replace(/^::ffff:/, '');
+  const parts = normalized.split('.');
+  if (parts.length === 4) return `${parts[0]}.${parts[1]}.${parts[2]}.*`;
+
+  if (normalized.includes(':')) {
+    const segments = normalized.split(':').filter(Boolean);
+    return `${segments.slice(0, 3).join(':')}:***`;
+  }
+
+  return 'masked';
+};
+
 const SERVER_PORT = 8010;
 
 export default class SocketioServer {
@@ -146,7 +161,7 @@ export default class SocketioServer {
         await this.rateLimiter.consume(remoteAddress, 5)
       }
       catch(rateLimiterRes) {
-        logger.info('remoteAddress '+remoteAddress+' force disconnect RATE_LIMITED')
+        logger.info({ remoteAddress: maskIpAddress(remoteAddress) }, 'force disconnect RATE_LIMITED')
         await socket.disconnect();
         return;
       }
@@ -190,7 +205,7 @@ export default class SocketioServer {
 
       // Check if the user has reached the maximum allowed connections
       if(this.getUserConnectionCount(userId) >= this.maxConnectionsPerUser) {
-        logger.info('user '+userId+' reached max number of connections')
+        logger.info({ userId: maskIpAddress(userId) }, 'reached max number of connections')
         socket.disconnect();
         return;
       }

@@ -3,7 +3,7 @@ import { readFileSync, existsSync, createWriteStream } from 'fs';
 import { Readable } from 'stream';
 import { finished } from 'stream/promises';
 import { join, extname } from 'path';
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import logger from '@utils/logger.js';
 
 const downloadDirectory = './tokens_logo';
@@ -53,18 +53,16 @@ async function deleteDirectory(directoryPath) {
 
     logger.info(`Directory deleted: ${directoryPath}`);
   } catch (error) {
-    logger.error({ err: error.message }, `Error deleting directory ${directoryPath}:`);
+    logger.error({ err: error }, `Error deleting directory ${directoryPath}:`);
   }
 }
 
 function gitClone(repositoryUrl, outputPath) {
   return new Promise((resolve, reject) => {
   	logger.info('Cloning repository '+repositoryUrl)
-    const command = `git clone ${repositoryUrl} ${outputPath}`;
-
-    exec(command, (error) => {
+    execFile('git', ['clone', repositoryUrl, outputPath], (error) => {
       if (error) {
-        logger.error(`Error executing git clone: ${error.message}`);
+        logger.error({ err: error }, 'Error executing git clone');
         reject(error);
         return;
       }
@@ -98,7 +96,7 @@ async function eosCafeCopyAndRenameFiles(repoDir, DESTDIR) {
   	}
 	}
 	catch(error) {
-		logger.error({ err: error.message }, 'Error:');
+		logger.error({ err: error }, 'Error:');
 	}
 }
 
@@ -131,7 +129,7 @@ async function alcorCopyAndRenameFiles(logoDir, DESTDIR) {
 
     logger.info('All files copied and renamed successfully.');
   } catch (error) {
-    logger.error({ err: error.message }, 'Error:');
+    logger.error({ err: error }, 'Error:');
   }
 }
 

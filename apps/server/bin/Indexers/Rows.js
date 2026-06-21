@@ -98,7 +98,7 @@ export default class RowsIndexer {
 		const rowIndex = this.findRowIndex(row)
 
 		if(rowIndex === -1) {
-			logger.info('warning row code:'+row.code+' table:'+row.table+' scope:'+row.scope+' to delete doesn\'t exists doing another init for this code table scope');
+			logger.warn('warning row code:'+row.code+' table:'+row.table+' scope:'+row.scope+' to delete doesn\'t exists doing another init for this code table scope');
 			this.initCodeTableScope(row.code, row.table, row.scope)
 		}
 		else {
@@ -383,7 +383,7 @@ export default class RowsIndexer {
 
 		// If rows are not present for scope
 		if(!(this.rows[row.code][row.table][row.scope] !== undefined && null !== this.rows[row.code][row.table][row.scope])) {
-			logger.info({ row }, 'warning rows not present onUpdateReaderrows')
+			logger.warn({ row }, 'warning rows not present onUpdateReaderrows')
 			this.initCodeTableScope(row.code, row.table, row.scope)
 			return;
 		}

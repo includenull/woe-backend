@@ -104,7 +104,7 @@ export default class StreamReaderrows {
     const deletedRows$ = rows$.pipe(filter((row: any) => !row.present));
 
     existingRows$.subscribe((row) => {
-      logger.info(
+      logger.debug(
         "[" +
           row.block_num +
           "]Received row for " +
@@ -117,7 +117,7 @@ export default class StreamReaderrows {
     });
 
     deletedRows$.subscribe((row) => {
-      logger.info(
+      logger.debug(
         "[" +
           row.block_num +
           "]Deleted row for " +
