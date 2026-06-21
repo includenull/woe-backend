@@ -64,8 +64,15 @@ export function extractShipTraces(data) {
         }
     }
     return result.sort((left, right) => {
-        return (Number.parseInt(left.trace.global_sequence, 10) -
-            Number.parseInt(right.trace.global_sequence, 10));
+        const leftSequence = BigInt(left.trace.global_sequence);
+        const rightSequence = BigInt(right.trace.global_sequence);
+        if (leftSequence < rightSequence) {
+            return -1;
+        }
+        if (leftSequence > rightSequence) {
+            return 1;
+        }
+        return 0;
     });
 }
 export function extractShipTableRows(deltas) {

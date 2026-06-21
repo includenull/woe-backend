@@ -103,14 +103,12 @@ export default class StreamReader {
 
   async toReaderBlock(shipBlock: ShipBlockResponse) {
     const block = shipBlock.block;
-    const transactions = shipBlock.traces
-      .filter((trace) => trace[0] === "transaction_trace_v0")
-      .map((trace) => ({
-        transaction_id: trace[1].id,
-        cpu_usage_us: trace[1].cpu_usage_us,
-        net_usage_words: trace[1].net_usage_words,
-        net_usage: trace[1].net_usage,
-      }));
+    const transactions = shipBlock.traces.map((trace) => ({
+      transaction_id: trace[1].id,
+      cpu_usage_us: trace[1].cpu_usage_us,
+      net_usage_words: trace[1].net_usage_words,
+      net_usage: trace[1].net_usage,
+    }));
     const actions = await this.shipAdapter.decodeMatchingActions(
       shipBlock,
       this.actions_interest,
@@ -131,50 +129,48 @@ export default class StreamReader {
 
   async handleShipBlock(shipBlock: ShipBlockResponse) {
     const block = await this.toReaderBlock(shipBlock);
-    setTimeout(async () => {
-      const redis = await getRedis();
-      redis.set("READER_BLOCK_NUM", "" + block.block_num);
+    const redis = await getRedis();
+    await redis.set("READER_BLOCK_NUM", "" + block.block_num);
 
-      if (block.block_num >= this.initialStartBlock) {
-        if (this.lastProcessedBlock > block.block_num) {
-          logger.info(
-            "FORK DETECTED fell from block " +
-              this.lastProcessedBlock +
-              " to " +
-              block.block_num,
-          );
-          await SwapOrderRow.removeHeadAboveBlocknum(block.block_num);
-          await MarketMatchRow.removeHeadAboveBlocknum(block.block_num);
-          await SwapVThreeOrderRow.removeHeadAboveBlocknum(block.block_num);
-          await LiquidityRow.removeHeadAboveBlocknum(block.block_num);
-          await ListingEventRow.removeHeadAboveBlocknum(block.block_num);
-          await LimitLogOrderFillRow.removeHeadAboveBlocknum(block.block_num);
-          await LimitLogOrderCloseRow.removeHeadAboveBlocknum(block.block_num);
-
-          redis.publish("READER_FORK_DETECTED", "" + block.block_num);
-        }
+    if (block.block_num >= this.initialStartBlock) {
+      if (this.lastProcessedBlock > block.block_num) {
         logger.info(
-          "============================================================",
+          "FORK DETECTED fell from block " +
+            this.lastProcessedBlock +
+            " to " +
+            block.block_num,
         );
-        logger.info(
-          "block " + block.block_num + ": " + block.actions.length + " actions",
-        );
+        await SwapOrderRow.removeHeadAboveBlocknum(block.block_num);
+        await MarketMatchRow.removeHeadAboveBlocknum(block.block_num);
+        await SwapVThreeOrderRow.removeHeadAboveBlocknum(block.block_num);
+        await LiquidityRow.removeHeadAboveBlocknum(block.block_num);
+        await ListingEventRow.removeHeadAboveBlocknum(block.block_num);
+        await LimitLogOrderFillRow.removeHeadAboveBlocknum(block.block_num);
+        await LimitLogOrderCloseRow.removeHeadAboveBlocknum(block.block_num);
 
-        if (block.actions.length) {
-          const dataRows = await this.processBlock(block);
-          this.onProcessedData(dataRows);
-        }
+        await redis.publish("READER_FORK_DETECTED", "" + block.block_num);
       }
-    }, 0);
+      logger.info(
+        "============================================================",
+      );
+      logger.info(
+        "block " + block.block_num + ": " + block.actions.length + " actions",
+      );
+
+      if (block.actions.length) {
+        const dataRows = await this.processBlock(block);
+        this.onProcessedData(dataRows);
+      }
+    }
   }
 
   async connect() {
     logger.info("STREAM READER connecting");
     const reader = await this.loadReader();
     logger.info("Consuming SHIP blocks");
-    reader.consume((shipBlock: ShipBlockResponse) =>
-      this.handleShipBlock(shipBlock),
-    );
+    reader.consume(async (shipBlock: ShipBlockResponse) => {
+      await this.handleShipBlock(shipBlock);
+    });
     reader.startProcessing(this.readerRequest);
   }
 

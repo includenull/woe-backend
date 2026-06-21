@@ -388,10 +388,7 @@ export default class StateHistoryBlockReader {
   }
 
   private flushAcksIfNeeded(force = false): void {
-    const batchSize = Math.max(
-      1,
-      Math.min(this.ackPending, this.currentArgs.max_messages_in_flight ?? 1),
-    );
+    const batchSize = Math.max(1, this.currentArgs.max_messages_in_flight ?? 1);
 
     if (!force && this.ackPending < batchSize) {
       return;

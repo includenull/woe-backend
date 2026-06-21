@@ -232,6 +232,24 @@ describe("ShipReaderAdapter", () => {
     expect(fetchAbi).toHaveBeenCalledTimes(1);
   });
 
+  it("retries ABI fetches after transient failures", async () => {
+    const fetchAbi = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("temporary abi failure"))
+      .mockResolvedValueOnce({
+        account_name: "swap.test",
+        abi: rawAbi,
+      });
+    const adapter = new ShipReaderAdapter(fetchAbi);
+
+    await expect(adapter.getAbi("swap.test")).rejects.toThrow(
+      "temporary abi failure",
+    );
+    await expect(adapter.getAbi("swap.test")).resolves.toBeInstanceOf(ABI);
+
+    expect(fetchAbi).toHaveBeenCalledTimes(2);
+  });
+
   it("supports exact and wildcard table filtering", async () => {
     const fetchAbi = vi.fn(async (account_name: string) => ({
       account_name,

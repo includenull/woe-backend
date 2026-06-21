@@ -85,9 +85,12 @@ export class ShipReaderAdapter {
     let abiPromise = this.abiCache.get(contract);
 
     if (!abiPromise) {
-      abiPromise = this.abiFetcher(contract).then(({ abi }) =>
-        ABI.from(abi as any),
-      );
+      abiPromise = this.abiFetcher(contract)
+        .then(({ abi }) => ABI.from(abi as any))
+        .catch((error) => {
+          this.abiCache.delete(contract);
+          throw error;
+        });
       this.abiCache.set(contract, abiPromise);
     }
 

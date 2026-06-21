@@ -38,6 +38,7 @@ export default class StreamReaderrows {
       },
     );
     this.readerRequest = {
+      // Reader rows are live-only; start ahead of the observed head to avoid replaying already-indexed deltas.
       start_block_num: this.info.head_block_num + 10,
       end_block_num: 0xffffffff,
       max_messages_in_flight: 500,
@@ -86,9 +87,9 @@ export default class StreamReaderrows {
   async connect() {
     logger.info("STREAM READER ROWS connecting");
     const reader = await this.loadReader();
-    reader.consume((shipBlock: ShipBlockResponse) =>
-      this.processShipBlock(shipBlock),
-    );
+    reader.consume(async (shipBlock: ShipBlockResponse) => {
+      await this.processShipBlock(shipBlock);
+    });
     reader.startProcessing(this.readerRequest);
   }
 }

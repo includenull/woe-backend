@@ -275,7 +275,7 @@ export default class StateHistoryBlockReader {
         this.ws.send(serializeEosioType("request", request, this.shipAbi));
     }
     flushAcksIfNeeded(force = false) {
-        const batchSize = Math.max(1, Math.min(this.ackPending, this.currentArgs.max_messages_in_flight ?? 1));
+        const batchSize = Math.max(1, this.currentArgs.max_messages_in_flight ?? 1);
         if (!force && this.ackPending < batchSize) {
             return;
         }
