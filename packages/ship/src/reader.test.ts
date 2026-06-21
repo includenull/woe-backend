@@ -186,14 +186,20 @@ describe("StateHistoryBlockReader", () => {
     expect(reader.flushAcksIfNeeded).toHaveBeenCalledOnce();
   });
 
-  it("initializes deserialize workers from TypeScript sources", async () => {
+  it("deserializes through workers from TypeScript sources", async () => {
     const reader = new StateHistoryBlockReader("ws://example.invalid", {
       ds_threads: 1,
     }) as any;
-    reader.shipAbi = ABI.from({
+    const abi = ABI.from({
       version: "eosio::abi/1.1",
       types: [],
-      structs: [],
+      structs: [
+        {
+          name: "test_row",
+          base: "",
+          fields: [{ name: "value", type: "uint64" }],
+        },
+      ],
       actions: [],
       tables: [],
       ricardian_clauses: [],
@@ -201,10 +207,17 @@ describe("StateHistoryBlockReader", () => {
       abi_extensions: [],
       variants: [],
     } as any);
+    reader.shipAbi = abi;
 
     await reader.initializeDeserializeWorkers();
 
     expect(reader.deserializeWorkers).toBeDefined();
+    await expect(
+      reader.deserializeParallel(
+        "test_row",
+        new Uint8Array([42, 0, 0, 0, 0, 0, 0, 0]),
+      ),
+    ).resolves.toEqual({ value: 42 });
     await reader.deserializeWorkers.destroy();
   });
 

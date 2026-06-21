@@ -31,6 +31,8 @@ type PiscinaLike = {
 };
 
 const workerModuleExtension = import.meta.url.endsWith(".ts") ? ".ts" : ".js";
+const workerExecArgv =
+  workerModuleExtension === ".ts" ? ["--import", "tsx"] : undefined;
 
 const noopLogger: ShipReaderLogger = {
   info() {},
@@ -47,6 +49,7 @@ const Piscina = PiscinaImport as unknown as {
     minThreads: number;
     maxThreads: number;
     idleTimeout: number;
+    execArgv?: string[];
     workerData: { abi: unknown };
   }): PiscinaLike;
 };
@@ -461,6 +464,7 @@ export default class StateHistoryBlockReader {
       minThreads: poolSize,
       maxThreads: poolSize,
       idleTimeout: Infinity,
+      execArgv: workerExecArgv,
       workerData: { abi: this.shipAbi.toJSON() },
     });
 
