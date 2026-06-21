@@ -9,7 +9,7 @@ export const parseAsset = (value) => {
 
 export const getAssetAmount = (value) => {
   const parsed = parseAsset(value)
-  return Number(parsed.units.toString()) / Math.pow(10, parsed.symbol.precision)
+  return parsed.units.toNumber() / Math.pow(10, parsed.symbol.precision)
 }
 
 export const getAssetCode = (value) => {
