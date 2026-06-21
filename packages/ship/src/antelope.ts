@@ -94,10 +94,6 @@ export function extractShipTraces(
         throw new Error(`Unsupported action trace type ${actionTrace[0]}`);
       }
 
-      if (actionTrace[1].receiver !== actionTrace[1].act.account) {
-        continue;
-      }
-
       result.push({
         txId,
         trace: {

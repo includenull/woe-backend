@@ -90,4 +90,72 @@ describe("StateHistoryBlockReader", () => {
     expect(reader.ackPending).toBe(0);
     expect(reader.flushAcksIfNeeded).not.toHaveBeenCalled();
   });
+
+  it("waits for in-flight processing before reconnect cleanup", async () => {
+    const reader = createReader() as any;
+    let signalProcessingStarted: (() => void) | undefined;
+    let finishProcessing: (() => void) | undefined;
+    const processingStarted = new Promise<void>((resolve) => {
+      signalProcessingStarted = resolve;
+    });
+    const processingFinished = new Promise<void>((resolve) => {
+      finishProcessing = resolve;
+    });
+    reader.processingChain = (async () => {
+      signalProcessingStarted?.();
+      await processingFinished;
+    })();
+    reader.deserializeWorkers = { destroy: vi.fn(async () => {}) };
+    reader.stopped = false;
+
+    const closePromise = reader.onClose();
+    await processingStarted;
+    await Promise.resolve();
+
+    expect(reader.reconnectTimer).toBeUndefined();
+
+    finishProcessing?.();
+    await closePromise;
+
+    expect(reader.reconnectTimer).toBeDefined();
+    reader.clearReconnectTimer();
+  });
+
+  it("flushes pending acknowledgements before clearing close state", async () => {
+    const reader = createReader() as any;
+    reader.ackPending = 3;
+    reader.ws = {};
+    reader.shipAbi = {};
+    reader.send = vi.fn();
+    reader.stopped = true;
+
+    await reader.onClose();
+
+    expect(reader.send).toHaveBeenCalledWith([
+      "get_blocks_ack_request_v0",
+      { num_messages: 3 },
+    ]);
+    expect(reader.ackPending).toBe(0);
+    expect(reader.ws).toBeNull();
+    expect(reader.shipAbi).toBeNull();
+  });
+
+  it("does not terminate a stale websocket while blocks are queued for processing", () => {
+    const reader = createReader() as any;
+    const ws = {
+      readyState: 1,
+      ping: vi.fn(),
+      terminate: vi.fn(),
+    };
+    reader.ws = ws;
+    reader.connected = true;
+    reader.processingBacklog = 1;
+    reader.lastShipMessageAt = 0;
+
+    reader.checkConnectionHealth();
+
+    expect(ws.ping).toHaveBeenCalledOnce();
+    expect(ws.terminate).not.toHaveBeenCalled();
+    expect(reader.lastShipMessageAt).toBeGreaterThan(0);
+  });
 });

@@ -99,6 +99,8 @@ export default class StateHistoryBlockReader {
 
   private processingChain: Promise<void> = Promise.resolve();
 
+  private processingBacklog = 0;
+
   private deserializeWorkers?: PiscinaLike;
 
   private ackPending = 0;
@@ -254,34 +256,55 @@ export default class StateHistoryBlockReader {
     type: string,
     response: GetBlocksResultV0,
   ): Promise<void> {
+    this.processingBacklog += 1;
     this.processingChain = this.processingChain.then(async () => {
-      const blockResponse = await this.buildBlockResponse(type, response);
+      this.recordShipMessageActivity();
 
-      if (!blockResponse) {
+      try {
+        const blockResponse = await this.buildBlockResponse(type, response);
+
+        if (!blockResponse) {
+          this.ackPending += 1;
+          this.flushAcksIfNeeded();
+          return;
+        }
+
+        if (this.consumer) {
+          await this.consumer(blockResponse);
+        }
+
+        this.currentArgs.start_block_num =
+          blockResponse.this_block.block_num + 1;
         this.ackPending += 1;
         this.flushAcksIfNeeded();
-        return;
+      } finally {
+        this.processingBacklog -= 1;
+        this.recordShipMessageActivity();
       }
-
-      if (this.consumer) {
-        await this.consumer(blockResponse);
-      }
-
-      this.currentArgs.start_block_num = blockResponse.this_block.block_num + 1;
-      this.ackPending += 1;
-      this.flushAcksIfNeeded();
     });
 
     await this.processingChain;
   }
 
   private async onClose(): Promise<void> {
+    const pendingProcessing = this.processingChain;
+
     this.stopHealthCheck();
     this.connected = false;
     this.connecting = false;
+
+    try {
+      await pendingProcessing;
+    } catch (error) {
+      this.logger.error("SHIP processing chain failed before close", {
+        error,
+      });
+    }
+
+    this.flushAcksIfNeeded(true);
     this.ws = null;
     this.shipAbi = null;
-    this.ackPending = 0;
+    this.processingBacklog = 0;
     this.processingChain = Promise.resolve();
 
     if (this.deserializeWorkers) {
@@ -352,6 +375,17 @@ export default class StateHistoryBlockReader {
     const now = Date.now();
     const inactiveMs = now - this.lastShipMessageAt;
     const staleTimeoutMs = this.shipStaleTimeoutMs;
+
+    if (this.processingBacklog > 0) {
+      this.recordShipMessageActivity();
+      try {
+        ws.ping();
+      } catch (error) {
+        this.logger.error("Failed to ping SHIP websocket", { error });
+        ws.terminate();
+      }
+      return;
+    }
 
     if (inactiveMs >= staleTimeoutMs) {
       this.logger.warn("SHIP websocket stale; terminating connection", {
