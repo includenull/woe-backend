@@ -2,7 +2,7 @@
 
 /*
  * WaxOnEdge — "Terminal" design tokens.
- * This @theme block is the single source of truth for the palette, type, and
+ * This theme block is the single source of truth for the palette, type, and
  * radii. Editing a value here updates every utility (bg-surface, text-brand,
  * border-line, ...) across the app. ui/tokens.ts mirrors these for the catalog.
  */
